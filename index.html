@@ -244,7 +244,10 @@
     <div class="card tight">
       <label class="fld" for="dolarBlue">Dólar blue</label>
       <input type="number" id="dolarBlue" value="1250" min="0" step="10" inputmode="numeric">
-      <div class="note" style="text-align:left;padding:6px 0 0">$/USD · se usa para mostrar el estimado en pesos</div>
+      <div style="margin-top:8px">
+        <button class="btn sm" type="button" id="btnActualizarBlue">Actualizar cotización</button>
+      </div>
+      <div class="note" style="text-align:left;padding:6px 0 0" id="dolarBlueStatus">$/USD · se usa para mostrar el estimado en pesos</div>
     </div>
     <div class="hero" style="margin-bottom:14px">
       <div class="cap" id="capRes">Estimado</div>
@@ -585,6 +588,48 @@ const usd = n => 'US$ ' + Math.round(n).toLocaleString('es-AR');
 const ars = n => '$ ' + Math.round(n).toLocaleString('es-AR');
 const pct = n => (Math.round(n*10)/10).toLocaleString('es-AR') + '%';
 const num = n => (Math.round(n*10)/10).toLocaleString('es-AR');
+function fmtHora(iso){
+  const d = new Date(iso);
+  const dd = String(d.getDate()).padStart(2,'0');
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const hh = String(d.getHours()).padStart(2,'0');
+  const mi = String(d.getMinutes()).padStart(2,'0');
+  return `${dd}/${mm} ${hh}:${mi}`;
+}
+
+const FUENTES_DOLAR_BLUE = [
+  { nombre: 'DolarAPI', url: 'https://dolarapi.com/v1/dolares/blue', parse: d => Number(d.venta) },
+  { nombre: 'Bluelytics', url: 'https://api.bluelytics.com.ar/v2/latest', parse: d => Number(d.blue.value_sell) },
+];
+
+async function actualizarDolarBlue(manual){
+  const input = document.getElementById('dolarBlue');
+  const status = document.getElementById('dolarBlueStatus');
+  if(status) status.textContent = 'Buscando la cotización del día…';
+  for(const fuente of FUENTES_DOLAR_BLUE){
+    try{
+      const res = await fetch(fuente.url, { cache: 'no-store' });
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      const venta = fuente.parse(data);
+      if(!Number.isFinite(venta) || venta <= 0) throw new Error('Respuesta inválida');
+      GLOBAL.dolarBlue = venta;
+      GLOBAL.dolarBlueFecha = new Date().toISOString();
+      input.value = venta;
+      guardarPlantillas();
+      calcular();
+      if(status) status.textContent = `Blue del día (${fuente.nombre}): ${ars(venta)} · actualizado ${fmtHora(GLOBAL.dolarBlueFecha)}`;
+      if(manual) toast('Cotización actualizada ✓');
+      return;
+    }catch(err){ /* probar la siguiente fuente */ }
+  }
+  if(status){
+    status.textContent = GLOBAL.dolarBlueFecha
+      ? `Sin conexión con las cotizadoras — usando el último valor conocido (${fmtHora(GLOBAL.dolarBlueFecha)})`
+      : 'No se pudo obtener la cotización automática. Ingresá el valor a mano.';
+  }
+  if(manual) toast('No se pudo actualizar la cotización');
+}
 
 document.querySelectorAll('.tab').forEach(t=>{
   t.onclick = ()=>{
@@ -1346,7 +1391,9 @@ document.getElementById('adjAdd').onclick = ()=>{
 document.getElementById('cantidad').oninput = ()=>{ calcular(); calcularCash(); };
 document.getElementById('dolarBlue').oninput = e=>{
   GLOBAL.dolarBlue = Number(e.target.value)||0; guardarPlantillas(); calcular();
+  document.getElementById('dolarBlueStatus').textContent = 'Valor editado a mano · tocá "Actualizar" para volver a la cotización del día';
 };
+document.getElementById('btnActualizarBlue').onclick = ()=>actualizarDolarBlue(true);
 document.getElementById('fechaInicio').oninput = e=>{
   GLOBAL.fechaInicio = e.target.value; guardarPlantillas(); calcular(); calcularPlan(); calcularGantt();
 };
@@ -1373,6 +1420,11 @@ document.getElementById('jorAyudante').value = GLOBAL.jornales.ayudante;
 document.getElementById('diasSem').value = GLOBAL.jornales.dias;
 document.getElementById('fechaInicio').value = GLOBAL.fechaInicio;
 document.getElementById('dolarBlue').value = GLOBAL.dolarBlue;
+if(GLOBAL.dolarBlueFecha){
+  document.getElementById('dolarBlueStatus').textContent =
+    `Último valor conocido: ${ars(GLOBAL.dolarBlue)} (${fmtHora(GLOBAL.dolarBlueFecha)})`;
+}
+actualizarDolarBlue(false);
 document.getElementById('adjFecha').value = new Date().toISOString().slice(0,10);
 calcularCash();
 calcularPlan();
