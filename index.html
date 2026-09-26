@@ -241,10 +241,16 @@
       <label class="fld">Nivel de construcción</label>
       <div class="levels" id="levels"></div>
     </div>
+    <div class="card tight">
+      <label class="fld" for="dolarBlue">Dólar blue</label>
+      <input type="number" id="dolarBlue" value="1250" min="0" step="10" inputmode="numeric">
+      <div class="note" style="text-align:left;padding:6px 0 0">$/USD · se usa para mostrar el estimado en pesos</div>
+    </div>
     <div class="hero" style="margin-bottom:14px">
       <div class="cap" id="capRes">Estimado</div>
       <div class="big" id="total">—</div>
       <div class="rng" id="rango">—</div>
+      <div class="rng" id="totalArs" style="margin-top:4px"></div>
     </div>
     <div class="card"><h3>Desglose por rubro</h3><div id="rubros"></div></div>
     <div class="card"><h3>Resumen de tiempos</h3><div id="resumenTiempos"></div></div>
@@ -532,6 +538,7 @@ const GLOBAL = {
   jornales: { oficial: 35000, ayudante: 25000, dias: 5 },
   fechaInicio: new Date().toISOString().slice(0,10),
   desvio: 10,
+  dolarBlue: 1250,
   cac: { base: 10000, actual: 10300, fechaBase: '2026-09' }
 };
 
@@ -657,6 +664,9 @@ function calcular(){
   document.getElementById('total').textContent = total ? usd(total) : '—';
   document.getElementById('rango').innerHTML = total
     ? `Rango: <b>${usd(total*(1-d))}</b> – <b>${usd(total*(1+d))}</b>` : '—';
+  const blue = GLOBAL.dolarBlue || 0;
+  document.getElementById('totalArs').textContent =
+    (total && blue) ? `≈ ${ars(total*blue)}` : '';
 
   document.getElementById('rubros').innerHTML =
     p.rubros.map(r=>`
@@ -1334,6 +1344,9 @@ document.getElementById('adjAdd').onclick = ()=>{
 
 /* ===== INPUTS GLOBALES ===== */
 document.getElementById('cantidad').oninput = ()=>{ calcular(); calcularCash(); };
+document.getElementById('dolarBlue').oninput = e=>{
+  GLOBAL.dolarBlue = Number(e.target.value)||0; guardarPlantillas(); calcular();
+};
 document.getElementById('fechaInicio').oninput = e=>{
   GLOBAL.fechaInicio = e.target.value; guardarPlantillas(); calcular(); calcularPlan(); calcularGantt();
 };
@@ -1359,6 +1372,7 @@ document.getElementById('jorOficial').value = GLOBAL.jornales.oficial;
 document.getElementById('jorAyudante').value = GLOBAL.jornales.ayudante;
 document.getElementById('diasSem').value = GLOBAL.jornales.dias;
 document.getElementById('fechaInicio').value = GLOBAL.fechaInicio;
+document.getElementById('dolarBlue').value = GLOBAL.dolarBlue;
 document.getElementById('adjFecha').value = new Date().toISOString().slice(0,10);
 calcularCash();
 calcularPlan();
