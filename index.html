@@ -917,8 +917,8 @@ document.getElementById('fGuardar').onclick = ()=>{
 /* ===== CASH FLOW ===== */
 function calcularCash(){
   const { p, total } = datosBase();
-  const antPct = Math.min(90, Math.max(0, Number(document.getElementById('antPct').value)||45))/100;
-  const retPct = Math.min(20, Math.max(0, Number(document.getElementById('retencion').value)||0))/100;
+  const antPct = Math.min(90, Math.max(0, Number(document.getElementById('antPct').value)))/100;
+  const retPct = Math.min(20, Math.max(0, Number(document.getElementById('retencion').value)||0)))/100;
 
   const semanas = duracionSemanal();
   const nMeses = Math.max(1, Math.ceil(semanas/4.3));
