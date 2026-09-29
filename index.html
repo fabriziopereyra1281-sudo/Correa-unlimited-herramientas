@@ -1938,41 +1938,32 @@ async function generarPDFRecibo(){
   return { blob, filename: opt.filename, nro, persona: p, mov: m };
 }
 
-  document.getElementById('btnWhatsappRecibo').onclick = async ()=>{
-  toast('Generando PDF...');
-  try {
-    const resultado = await generarPDFRecibo();
-    if(!resultado){ toast('No se pudo generar el PDF'); return; }
+document.getElementById('btnWhatsappRecibo').onclick = ()=>{
+  const m = cuentas.movimientos.find(x=>x.id===reciboActualId);
+  if(!m) return;
+  const p = getPersona(m.personaId);
+  const signo = signoDe(m.tipo);
+  const nro = String(m.nroRecibo||0).padStart(4,'0');
+  const txt = `*CORREA UNLIMITED*
+RECIBO N° ${nro}
 
-    const file = new File([resultado.blob], resultado.filename, { type: 'application/pdf' });
+*Fecha:* ${m.fecha}
+*Recibí de:* Correa Unlimited
+*Suma:* ${ars(m.monto)}
+*Concepto:* ${nombreTipo(m.tipo)}${m.nota?' — '+m.nota:''}
+*Obra:* ${p.obra||'—'}
 
-    if(navigator.canShare && navigator.canShare({ files: [file] })){
-      try {
-        await navigator.share({
-          files: [file],
-          title: 'Recibo N° ' + resultado.nro,
-          text: 'Recibo Correa Unlimited'
-        });
-        toast('PDF compartido ✓');
-        return;
-      } catch(e){
-        if(e.name === 'AbortError'){ return; }
-        console.error('Share error:', e);
-      }
-    }
+Saldo del movimiento: ${signo>0?'+':'−'} ${ars(m.monto)}`;
 
-    const url = URL.createObjectURL(resultado.blob);
-    const win = window.open(url, '_blank');
-    if(win){
-      toast('PDF abierto — tocá Compartir en Safari');
-    } else {
-      window.location.href = url;
-    }
-
-  } catch(e){
-    console.error(e);
-    toast('Error: ' + (e.message||'desconocido'));
+  let url = 'https://wa.me/';
+  if(p.telefono){
+    let tel = p.telefono.replace(/\D/g,'');
+    if(tel.startsWith('0')) tel = tel.substring(1);
+    if(!tel.startsWith('54')) tel = '54' + tel;
+    url += tel;
   }
+  url += '?text=' + encodeURIComponent(txt);
+  window.open(url, '_blank');
 };
 document.getElementById('movFecha').value = new Date().toISOString().slice(0,10);
 pintarCuentas();
