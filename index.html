@@ -1,5 +1,6 @@
 <!DOCTYPE ht. ml>
 <html lang="es">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -1881,34 +1882,65 @@ document.getElementById('btnCerrarRecibo').onclick = ()=>{
 };
 document.getElementById('btnImprimirRecibo').onclick = ()=>window.print();
 
-document.getElementById('btnWhatsappRecibo').onclick = ()=>{
+async function generarPDFRecibo(){
   const m = cuentas.movimientos.find(x=>x.id===reciboActualId);
-  if(!m) return;
+  if(!m) return null;
   const p = getPersona(m.personaId);
-  const signo = signoDe(m.tipo);
+  if(!p) return null;
+
   const nro = String(m.nroRecibo||0).padStart(4,'0');
-  const txt = `*CORREA UNLIMITED*
-RECIBO N° ${nro}
+  const reciboEl = document.getElementById('reciboContenido');
 
-*Fecha:* ${m.fecha}
-*Recibí de:* Correa Unlimited
-*Suma:* ${ars(m.monto)}
-*Concepto:* ${nombreTipo(m.tipo)}${m.nota?' — '+m.nota:''}
-*Obra:* ${p.obra||'—'}
+  const opt = {
+    margin: [10, 12, 10, 12],
+    filename: 'Recibo_' + nro + '_' + p.nombre.replace(/\s+/g,'_') + '.pdf',
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
 
-Saldo del movimiento: ${signo>0?'+':'−'} ${ars(m.monto)}`;
+  const pdf = await html2pdf().set(opt).from(reciboEl).toPdf().get('pdf');
+  const blob = pdf.output('blob');
 
-  let url = 'https://wa.me/';
-  if(p.telefono){
-    let tel = p.telefono.replace(/\D/g,'');
-    if(tel.startsWith('0')) tel = tel.substring(1);
-    if(!tel.startsWith('54')) tel = '54' + tel;
-    url += tel;
+  return { blob, filename: opt.filename, nro, persona: p, mov: m };
+}
+
+document.getElementById('btnWhatsappRecibo').onclick = async ()=>{
+  toast('Generando PDF...');
+  try {
+    const resultado = await generarPDFRecibo();
+    if(!resultado){ toast('No se pudo generar el PDF'); return; }
+
+    const file = new File([resultado.blob], resultado.filename, { type: 'application/pdf' });
+
+    if(navigator.canShare && navigator.canShare({ files: [file] })){
+      try {
+        await navigator.share({
+          files: [file],
+          title: 'Recibo N° ' + resultado.nro + ' - Correa Unlimited'
+        });
+        toast('PDF compartido ✓');
+        return;
+      } catch(e){
+        if(e.name === 'AbortError') return;
+        console.error(e);
+      }
+    }
+
+    const url = URL.createObjectURL(resultado.blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = resultado.filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url), 2000);
+    toast('PDF guardado en Archivos');
+  } catch(e){
+    console.error(e);
+    toast('Error al generar PDF');
   }
-  url += '?text=' + encodeURIComponent(txt);
-  window.open(url, '_blank');
 };
-
 document.getElementById('movFecha').value = new Date().toISOString().slice(0,10);
 pintarCuentas();
   /* ===== INIT ===== */
