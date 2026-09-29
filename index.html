@@ -201,6 +201,53 @@
     .gantt-head,.gantt-row{grid-template-columns:120px 1fr;gap:6px}
     .gantt-label{font-size:11px}
   }
+  /* CUENTAS */
+.recibo-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;overflow-y:auto;padding:20px 10px}
+.recibo-actions{max-width:700px;margin:0 auto 12px;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.recibo{max-width:700px;margin:0 auto;background:#fff;padding:40px 32px;border-radius:8px;font-family:'Courier New',monospace;color:#000;line-height:1.5}
+.recibo h1{text-align:center;font-size:22px;margin:0 0 4px;letter-spacing:2px}
+.recibo .recibo-num{text-align:center;font-size:14px;margin-bottom:24px;border:1px solid #000;display:inline-block;padding:4px 16px}
+.recibo .recibo-num-wrap{text-align:center;margin-bottom:20px}
+.recibo .recibo-line{border-top:1px dashed #000;margin:16px 0}
+.recibo .recibo-row{display:flex;justify-content:space-between;font-size:14px;margin:6px 0;gap:12px}
+.recibo .recibo-monto{font-size:24px;text-align:center;font-weight:800;letter-spacing:1px;margin:20px 0;padding:16px;background:#f5f5f5;border-radius:6px}
+.recibo .firma-block{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:40px}
+.recibo .firma{text-align:center;font-size:11px;font-family:-apple-system,sans-serif}
+.recibo .firma-line{height:60px;border-bottom:1px solid #000;margin-bottom:6px}
+.recibo .firma-name{font-weight:700}
+.recibo .firma-sub{color:#333}
+.recibo .recibo-foot{text-align:center;font-size:10px;margin-top:30px;color:#666;font-family:-apple-system,sans-serif}
+.mov-card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px;display:grid;gap:6px}
+.mov-card .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
+.mov-card .tipo{font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-weight:700;padding:3px 8px;border-radius:99px;background:var(--accent-soft);color:var(--accent)}
+.mov-card .tipo.menos{background:var(--ok-soft);color:var(--ok)}
+.mov-card .monto{font-size:18px;font-weight:800;font-variant-numeric:tabular-nums}
+.mov-card .monto.pos{color:var(--accent)}
+.mov-card .monto.neg{color:var(--bad)}
+.mov-card .fecha{font-size:11px;color:var(--muted)}
+.mov-card .nota{font-size:13px;color:var(--ink)}
+.mov-card .nro-rec{font-size:10px;color:var(--muted);letter-spacing:.05em;display:block;margin-top:2px}
+.mov-card .foto{max-width:100%;max-height:180px;border-radius:8px}
+.mov-card .acciones{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.persona-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:8px;cursor:pointer;transition:.15s}
+.persona-card:hover{border-color:#c9ccd2}
+.persona-card.on{border-color:var(--accent);background:var(--accent-soft)}
+.persona-card .info{flex:1;min-width:0}
+.persona-card .info h4{margin:0 0 3px;font-size:15px;font-weight:700}
+.persona-card .info .sub{font-size:12px;color:var(--muted)}
+.persona-card .saldo{font-size:18px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.persona-card .saldo.pos{color:var(--ok)}
+.persona-card .saldo.neg{color:var(--bad)}
+.persona-card .saldo.cero{color:var(--muted)}
+.persona-card .badge-tipo{display:inline-block;background:var(--accent);color:#fff;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700;letter-spacing:.05em;margin-left:6px;vertical-align:middle}
+.persona-card .badge-tipo.emp{background:var(--ok)}
+@media print{
+  body *{visibility:hidden}
+  .recibo-overlay,.recibo-overlay *{visibility:visible}
+  .recibo-overlay{position:absolute;inset:0;background:#fff;padding:0}
+  .recibo-actions{display:none}
+  .recibo{box-shadow:none;border-radius:0;max-width:100%}
+}
 </style>
 </head>
 <body>
@@ -462,6 +509,123 @@
     </div>
   </div>
 
+<!-- CUENTAS -->
+<div class="panel" id="p-cuentas">
+  <div class="card tight">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+      <div>
+        <h3 style="margin:0">Cuentas corrientes</h3>
+        <div class="note" style="text-align:left;padding:4px 0 0">Empleados y contratistas</div>
+      </div>
+      <button class="btn primary" id="btnNuevaPersona">+ Nueva persona</button>
+    </div>
+  </div>
+
+  <div class="kpis" id="cuentasKpis"></div>
+
+  <div class="card">
+    <h3>Personas</h3>
+    <div id="listaPersonas"></div>
+  </div>
+
+  <div class="plant-form" id="formPersona" style="display:none">
+    <h4 id="formPersonaTitulo">Nueva persona</h4>
+    <div class="grid" style="margin-bottom:12px">
+      <div><label class="fld">Nombre</label>
+        <input type="text" id="pNombre" placeholder="Juan Pérez"></div>
+      <div><label class="fld">Tipo</label>
+        <select id="pTipo">
+          <option value="contratista">Contratista</option>
+          <option value="empleado">Empleado propio</option>
+        </select></div>
+    </div>
+    <div class="grid" style="margin-bottom:12px">
+      <div><label class="fld">Oficio</label>
+        <input type="text" id="pOficio" placeholder="Electricista"></div>
+      <div><label class="fld">Obra asignada</label>
+        <input type="text" id="pObra" placeholder="Casa García"></div>
+    </div>
+    <div class="grid" style="margin-bottom:12px">
+      <div><label class="fld">Forma de cobro</label>
+        <select id="pFormaCobro">
+          <option value="unidad">Por unidad</option>
+          <option value="m2">Por m²</option>
+          <option value="dia">Por día</option>
+          <option value="cerrado">Precio cerrado</option>
+        </select></div>
+      <div><label class="fld">Precio unitario ($)</label>
+        <input type="number" id="pPrecio" step="100" min="0" placeholder="8000"></div>
+    </div>
+    <div style="margin-bottom:12px">
+      <label class="fld">Teléfono (WhatsApp)</label>
+      <input type="text" id="pTelefono" placeholder="1155551234">
+    </div>
+    <div class="ed-actions">
+      <button class="btn primary" id="btnGuardarPersona">Guardar persona</button>
+      <button class="btn ghost" id="btnCancelarPersona">Cancelar</button>
+    </div>
+  </div>
+
+  <div id="detallePersona" style="display:none">
+    <div class="card tight">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap">
+        <div>
+          <h3 id="detPersonaNombre" style="margin:0 0 4px"></h3>
+          <div class="note" style="text-align:left;padding:0" id="detPersonaInfo"></div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn sm" id="btnEditarPersona">Editar</button>
+          <button class="btn sm" id="btnCerrarDetalle">Cerrar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpis" id="detKpis"></div>
+
+    <div class="card">
+      <h3>Nuevo movimiento</h3>
+      <div class="grid" style="margin-bottom:10px">
+        <div><label class="fld">Fecha</label>
+          <input type="date" id="movFecha"></div>
+        <div><label class="fld">Monto ($)</label>
+          <input type="number" id="movMonto" step="100" min="0" placeholder="50000"></div>
+      </div>
+      <div class="grid" style="margin-bottom:10px">
+        <div><label class="fld">Tipo de movimiento</label>
+          <select id="movTipo">
+            <option value="adelanto">Adelanto (le diste plata)</option>
+            <option value="material">Materiales entregados</option>
+            <option value="herramienta">Herramienta prestada</option>
+            <option value="trabajo">Trabajo terminado</option>
+            <option value="pago">Pago realizado</option>
+            <option value="otro_a_favor">Otro (a tu favor)</option>
+            <option value="otro_en_contra">Otro (a favor de él)</option>
+          </select></div>
+        <div><label class="fld">Concepto / Nota</label>
+          <input type="text" id="movNota" placeholder="Adelanto para materiales"></div>
+      </div>
+      <div style="margin-bottom:10px">
+        <label class="fld">Foto (opcional)</label>
+        <input type="file" id="movFoto" accept="image/*">
+      </div>
+      <button class="btn primary" id="btnAddMovimiento">+ Agregar movimiento</button>
+    </div>
+
+    <div class="card">
+      <h3>Movimientos</h3>
+      <div id="listaMovimientos"></div>
+    </div>
+  </div>
+
+  <div class="recibo-overlay" id="reciboOverlay" style="display:none">
+    <div class="recibo-actions">
+      <button class="btn" id="btnCerrarRecibo">✕ Cerrar</button>
+      <button class="btn primary" id="btnImprimirRecibo">🖨️ Imprimir</button>
+      <button class="btn primary" id="btnWhatsappRecibo">📱 WhatsApp</button>
+    </div>
+    <div class="recibo" id="reciboContenido"></div>
+  </div>
+</div>
 </div>
 <div class="toast" id="toast"></div>
 <script>
@@ -643,6 +807,7 @@ document.querySelectorAll('.tab').forEach(t=>{
     if(t.dataset.t==='plant') pintarPlantillas();
     if(t.dataset.t==='gantt') calcularGantt();
     if(t.dataset.t==='adj') pintarAdicionales();
+    if(t.dataset.t==='cuentas') pintarCuentas();
     window.scrollTo({top:0,behavior:'smooth'});
   };
 });
@@ -1410,7 +1575,343 @@ function toast(msg){
   clearTimeout(t._h); t._h = setTimeout(()=>t.classList.remove('show'), 2500);
 }
 
-/* ===== INIT ===== */
+/* ===== CUENTAS CORRIENTES ===== */
+const KEY_CUENTAS = KEY + '_cuentas';
+let cuentas = cargarCuentas();
+let personaActivaId = null;
+
+function cargarCuentas(){
+  try{
+    const raw = localStorage.getItem(KEY_CUENTAS);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return { personas: [], movimientos: [], nroRecibo: 1 };
+}
+function guardarCuentas(){ localStorage.setItem(KEY_CUENTAS, JSON.stringify(cuentas)); }
+
+const signoDe = (tipo)=>{
+  if(tipo==='adelanto'||tipo==='material'||tipo==='herramienta'||tipo==='otro_a_favor') return 1;
+  return -1;
+};
+const nombreTipo = (t)=>{
+  return ({
+    adelanto:'Adelanto', material:'Materiales', herramienta:'Herramienta',
+    trabajo:'Trabajo', pago:'Pago',
+    otro_a_favor:'Otro (+)', otro_en_contra:'Otro (−)'
+  })[t] || t;
+};
+
+function getPersona(id){ return cuentas.personas.find(p=>p.id===id); }
+function movsDePersona(id){ return cuentas.movimientos.filter(m=>m.personaId===id); }
+function saldoDePersona(id){
+  return movsDePersona(id).reduce((a,m)=>a + signoDe(m.tipo)*Number(m.monto||0), 0);
+}
+
+function pintarCuentas(){
+  const totFavor = cuentas.personas.reduce((a,p)=>{ const s = saldoDePersona(p.id); return a + (s>0?s:0); }, 0);
+  const totContra = cuentas.personas.reduce((a,p)=>{ const s = saldoDePersona(p.id); return a + (s<0?Math.abs(s):0); }, 0);
+  const neto = totFavor - totContra;
+
+  document.getElementById('cuentasKpis').innerHTML = `
+    <div class="kpi good"><div class="k">A tu favor</div>
+      <div class="v">${ars(totFavor)}</div>
+      <div class="s">Te deben</div></div>
+    <div class="kpi alert"><div class="k">A favor de ellos</div>
+      <div class="v">${ars(totContra)}</div>
+      <div class="s">Les debés</div></div>
+    <div class="kpi"><div class="k">Personas</div>
+      <div class="v">${cuentas.personas.length}</div>
+      <div class="s">En cuenta corriente</div></div>
+    <div class="kpi ${neto>=0?'good':'alert'}"><div class="k">Saldo neto</div>
+      <div class="v">${ars(Math.abs(neto))}</div>
+      <div class="s">${neto>=0?'A tu favor':'A favor de ellos'}</div></div>`;
+
+  const box = document.getElementById('listaPersonas');
+  if(!cuentas.personas.length){
+    box.innerHTML = `<div class="note">Todavía no cargaste personas.</div>`;
+    return;
+  }
+  box.innerHTML = cuentas.personas.map(p=>{
+    const s = saldoDePersona(p.id);
+    const cls = s>0?'pos':s<0?'neg':'cero';
+    const est = s>0?`${ars(s)} te debe`:s<0?`${ars(Math.abs(s))} le debés`:'A mano';
+    const badge = p.tipo==='empleado'?'<span class="badge-tipo emp">EMPLEADO</span>':'<span class="badge-tipo">CONTRATISTA</span>';
+    return `<div class="persona-card ${p.id===personaActivaId?'on':''}" data-id="${p.id}">
+      <div class="info">
+        <h4>${p.nombre}${badge}</h4>
+        <div class="sub">${p.oficio||'—'}${p.obra?' · '+p.obra:''}</div>
+      </div>
+      <div class="saldo ${cls}">${est}</div>
+    </div>`;
+  }).join('');
+  box.querySelectorAll('.persona-card').forEach(c=>{
+    c.onclick = ()=>abrirDetallePersona(Number(c.dataset.id));
+  });
+}
+
+function abrirFormPersona(id){
+  const p = id ? getPersona(id) : null;
+  document.getElementById('formPersona').style.display = 'block';
+  document.getElementById('formPersonaTitulo').textContent = id ? 'Editar: '+p.nombre : 'Nueva persona';
+  document.getElementById('formPersona').dataset.editandoId = id || '';
+  document.getElementById('pNombre').value = p ? p.nombre : '';
+  document.getElementById('pTipo').value = p ? p.tipo : 'contratista';
+  document.getElementById('pOficio').value = p ? p.oficio : '';
+  document.getElementById('pObra').value = p ? p.obra : '';
+  document.getElementById('pFormaCobro').value = p ? p.formaCobro : 'unidad';
+  document.getElementById('pPrecio').value = p ? p.precioUnitario : '';
+  document.getElementById('pTelefono').value = p ? p.telefono : '';
+  document.getElementById('formPersona').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+document.getElementById('btnNuevaPersona').onclick = ()=>abrirFormPersona(null);
+document.getElementById('btnCancelarPersona').onclick = ()=>{
+  document.getElementById('formPersona').style.display = 'none';
+};
+
+document.getElementById('btnGuardarPersona').onclick = ()=>{
+  const nombre = document.getElementById('pNombre').value.trim();
+  if(!nombre){ toast('Falta el nombre'); return; }
+  const editId = Number(document.getElementById('formPersona').dataset.editandoId)||null;
+  const data = {
+    nombre,
+    tipo: document.getElementById('pTipo').value,
+    oficio: document.getElementById('pOficio').value.trim(),
+    obra: document.getElementById('pObra').value.trim(),
+    formaCobro: document.getElementById('pFormaCobro').value,
+    precioUnitario: Number(document.getElementById('pPrecio').value)||0,
+    telefono: document.getElementById('pTelefono').value.trim()
+  };
+  if(editId){
+    const i = cuentas.personas.findIndex(x=>x.id===editId);
+    if(i>=0) cuentas.personas[i] = { ...cuentas.personas[i], ...data };
+  } else {
+    cuentas.personas.push({ id: Date.now(), ...data });
+  }
+  guardarCuentas();
+  document.getElementById('formPersona').style.display = 'none';
+  pintarCuentas();
+  toast('Persona guardada ✓');
+};
+
+function abrirDetallePersona(id){
+  personaActivaId = id;
+  const p = getPersona(id);
+  if(!p) return;
+  document.getElementById('detallePersona').style.display = 'block';
+  document.getElementById('detPersonaNombre').textContent = p.nombre;
+  document.getElementById('detPersonaInfo').innerHTML =
+    `${p.tipo==='empleado'?'Empleado propio':'Contratista'} · ${p.oficio||'—'}${p.obra?' · '+p.obra:''}`;
+  pintarDetalle();
+  pintarCuentas();
+  document.getElementById('detallePersona').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+document.getElementById('btnCerrarDetalle').onclick = ()=>{
+  personaActivaId = null;
+  document.getElementById('detallePersona').style.display = 'none';
+  pintarCuentas();
+};
+document.getElementById('btnEditarPersona').onclick = ()=>{
+  if(personaActivaId) abrirFormPersona(personaActivaId);
+};
+
+function pintarDetalle(){
+  const id = personaActivaId;
+  if(!id) return;
+  const s = saldoDePersona(id);
+  const movs = movsDePersona(id).sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
+  const txt = s>0?`${ars(s)} te debe`:s<0?`${ars(Math.abs(s))} le debés`:'A mano';
+
+  document.getElementById('detKpis').innerHTML = `
+    <div class="kpi ${s>0?'good':s<0?'alert':''}"><div class="k">Saldo actual</div>
+      <div class="v">${txt}</div>
+      <div class="s">${movs.length} movimientos</div></div>
+    <div class="kpi"><div class="k">A tu favor</div>
+      <div class="v">${ars(movs.filter(m=>signoDe(m.tipo)>0).reduce((a,m)=>a+Number(m.monto||0),0))}</div>
+      <div class="s">Adelantos + materiales</div></div>
+    <div class="kpi"><div class="k">A favor de él</div>
+      <div class="v">${ars(movs.filter(m=>signoDe(m.tipo)<0).reduce((a,m)=>a+Number(m.monto||0),0))}</div>
+      <div class="s">Trabajos + pagos</div></div>
+    <div class="kpi"><div class="k">Último movimiento</div>
+      <div class="v">${movs[0]?ars(movs[0].monto):'—'}</div>
+      <div class="s">${movs[0]?movs[0].fecha:'—'}</div></div>`;
+
+  const lista = document.getElementById('listaMovimientos');
+  if(!movs.length){
+    lista.innerHTML = `<div class="note">No hay movimientos todavía.</div>`;
+    return;
+  }
+  lista.innerHTML = movs.map(m=>{
+    const signo = signoDe(m.tipo);
+    const clsMonto = signo>0?'pos':'neg';
+    const nro = m.nroRecibo ? `<span class="nro-rec">RECIBO N° ${String(m.nroRecibo).padStart(4,'0')}</span>` : '';
+    const foto = m.foto ? `<img class="foto" src="${m.foto}">` : '';
+    return `<div class="mov-card">
+      <div class="top">
+        <div>
+          <span class="tipo ${signo>0?'':'menos'}">${nombreTipo(m.tipo)}</span>
+          <span class="fecha"> · ${m.fecha}</span>
+          ${nro}
+        </div>
+        <div class="monto ${clsMonto}">${signo>0?'+':'−'} ${ars(m.monto)}</div>
+      </div>
+      ${m.nota?`<div class="nota">${m.nota.replace(/</g,'&lt;')}</div>`:''}
+      ${foto}
+      <div class="acciones">
+        <button class="btn sm" data-act="recibo" data-id="${m.id}">📄 Ver recibo</button>
+        <button class="btn sm" data-act="editar" data-id="${m.id}">Editar</button>
+        <button class="btn sm danger" data-act="borrar" data-id="${m.id}">Borrar</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  lista.querySelectorAll('button[data-act]').forEach(btn=>{
+    btn.onclick = ()=>{
+      const movId = Number(btn.dataset.id);
+      const act = btn.dataset.act;
+      if(act==='recibo') mostrarRecibo(movId);
+      if(act==='borrar'){
+        if(!confirm('¿Borrar este movimiento?')) return;
+        cuentas.movimientos = cuentas.movimientos.filter(x=>x.id!==movId);
+        guardarCuentas(); pintarDetalle(); pintarCuentas(); toast('Movimiento borrado');
+      }
+      if(act==='editar') editarMovimiento(movId);
+    };
+  });
+}
+
+function editarMovimiento(id){
+  const m = cuentas.movimientos.find(x=>x.id===id);
+  if(!m) return;
+  const nuevoMonto = prompt('Nuevo monto:', m.monto);
+  if(nuevoMonto===null) return;
+  const nuevaNota = prompt('Nueva nota:', m.nota||'');
+  if(nuevaNota===null) return;
+  m.monto = Number(nuevoMonto)||0;
+  m.nota = nuevaNota;
+  guardarCuentas(); pintarDetalle(); pintarCuentas(); toast('Movimiento actualizado');
+}
+
+document.getElementById('btnAddMovimiento').onclick = ()=>{
+  if(!personaActivaId){ toast('Elegí una persona'); return; }
+  const fecha = document.getElementById('movFecha').value || new Date().toISOString().slice(0,10);
+  const monto = Number(document.getElementById('movMonto').value)||0;
+  const tipo = document.getElementById('movTipo').value;
+  const nota = document.getElementById('movNota').value.trim();
+  const fotoInput = document.getElementById('movFoto');
+  if(!monto){ toast('Falta el monto'); return; }
+
+  const nroRecibo = cuentas.nroRecibo;
+  cuentas.nroRecibo++;
+
+  const guardar = (fotoData)=>{
+    cuentas.movimientos.push({
+      id: Date.now(), personaId: personaActivaId,
+      fecha, tipo, monto, nota, nroRecibo,
+      foto: fotoData||null
+    });
+    guardarCuentas();
+    document.getElementById('movMonto').value = '';
+    document.getElementById('movNota').value = '';
+    document.getElementById('movFoto').value = '';
+    pintarDetalle(); pintarCuentas();
+    toast('Movimiento agregado · Recibo N° '+String(nroRecibo).padStart(4,'0'));
+    const nuevoId = cuentas.movimientos[cuentas.movimientos.length-1].id;
+    setTimeout(()=>mostrarRecibo(nuevoId), 400);
+  };
+
+  if(fotoInput.files && fotoInput.files[0]){
+    const reader = new FileReader();
+    reader.onload = e=>guardar(e.target.result);
+    reader.readAsDataURL(fotoInput.files[0]);
+  } else {
+    guardar(null);
+  }
+};
+
+let reciboActualId = null;
+function mostrarRecibo(movId){
+  const m = cuentas.movimientos.find(x=>x.id===movId);
+  if(!m) return;
+  const p = getPersona(m.personaId);
+  if(!p) return;
+  reciboActualId = movId;
+
+  const signo = signoDe(m.tipo);
+  const concepto = nombreTipo(m.tipo) + (m.nota?' — '+m.nota:'');
+  const nro = String(m.nroRecibo||0).padStart(4,'0');
+
+  document.getElementById('reciboContenido').innerHTML = `
+    <h1>CORREA UNLIMITED</h1>
+    <div class="recibo-num-wrap"><span class="recibo-num">RECIBO N° ${nro}</span></div>
+    <div class="recibo-row"><span><b>Fecha:</b> ${m.fecha}</span><span><b>Hora:</b> ${new Date(m.id).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}</span></div>
+    <div class="recibo-line"></div>
+    <div class="recibo-row"><span><b>Recibí de:</b></span><span>CORREA UNLIMITED</span></div>
+    <div class="recibo-row"><span><b>La suma de:</b></span><span>${ars(m.monto)}</span></div>
+    <div class="recibo-row"><span><b>En concepto de:</b></span><span>${concepto}</span></div>
+    <div class="recibo-row"><span><b>Obra:</b></span><span>${p.obra||'—'}</span></div>
+    <div class="recibo-monto">${signo>0?'+':'−'} ${ars(m.monto)}</div>
+    <div class="recibo-line"></div>
+    <div class="firma-block">
+      <div class="firma">
+        <div class="firma-line"></div>
+        <div class="firma-name">${p.nombre}</div>
+        <div class="firma-sub">${p.tipo==='empleado'?'Empleado':'Contratista'} · ${p.oficio||''}</div>
+        <div class="firma-sub">DNI: ______________________</div>
+      </div>
+      <div class="firma">
+        <div class="firma-line"></div>
+        <div class="firma-name">Correa Unlimited</div>
+        <div class="firma-sub">Por la empresa</div>
+        <div class="firma-sub">Aclaración: ____________________</div>
+      </div>
+    </div>
+    <div class="recibo-foot">
+      Este recibo es válido como comprobante del movimiento. Se emiten 2 copias: una para cada parte.
+    </div>
+  `;
+  document.getElementById('reciboOverlay').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+
+document.getElementById('btnCerrarRecibo').onclick = ()=>{
+  document.getElementById('reciboOverlay').style.display = 'none';
+  document.body.style.overflow = '';
+};
+document.getElementById('btnImprimirRecibo').onclick = ()=>window.print();
+
+document.getElementById('btnWhatsappRecibo').onclick = ()=>{
+  const m = cuentas.movimientos.find(x=>x.id===reciboActualId);
+  if(!m) return;
+  const p = getPersona(m.personaId);
+  const signo = signoDe(m.tipo);
+  const nro = String(m.nroRecibo||0).padStart(4,'0');
+  const txt = `*CORREA UNLIMITED*
+RECIBO N° ${nro}
+
+*Fecha:* ${m.fecha}
+*Recibí de:* Correa Unlimited
+*Suma:* ${ars(m.monto)}
+*Concepto:* ${nombreTipo(m.tipo)}${m.nota?' — '+m.nota:''}
+*Obra:* ${p.obra||'—'}
+
+Saldo del movimiento: ${signo>0?'+':'−'} ${ars(m.monto)}`;
+
+  let url = 'https://wa.me/';
+  if(p.telefono){
+    let tel = p.telefono.replace(/\D/g,'');
+    if(tel.startsWith('0')) tel = tel.substring(1);
+    if(!tel.startsWith('54')) tel = '54' + tel;
+    url += tel;
+  }
+  url += '?text=' + encodeURIComponent(txt);
+  window.open(url, '_blank');
+};
+
+document.getElementById('movFecha').value = new Date().toISOString().slice(0,10);
+pintarCuentas();
+  /* ===== INIT ===== */
 pintarSelector();
 pintarNiveles();
 calcular();
