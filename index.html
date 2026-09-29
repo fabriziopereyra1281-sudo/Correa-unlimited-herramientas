@@ -1889,18 +1889,51 @@ async function generarPDFRecibo(){
   if(!p) return null;
 
   const nro = String(m.nroRecibo||0).padStart(4,'0');
-  const reciboEl = document.getElementById('reciboContenido');
+  const reciboOriginal = document.getElementById('reciboContenido');
+
+  const temp = document.createElement('div');
+  temp.style.position = 'fixed';
+  temp.style.left = '0';
+  temp.style.top = '0';
+  temp.style.width = '700px';
+  temp.style.background = '#ffffff';
+  temp.style.padding = '40px 32px';
+  temp.style.zIndex = '99999';
+  temp.style.fontFamily = "'Courier New', monospace";
+  temp.style.color = '#000';
+  temp.style.lineHeight = '1.5';
+
+  const clone = reciboOriginal.cloneNode(true);
+  clone.style.maxWidth = 'none';
+  clone.style.margin = '0';
+  clone.style.borderRadius = '0';
+  clone.style.padding = '0';
+  clone.style.boxShadow = 'none';
+
+  temp.appendChild(clone);
+  document.body.appendChild(temp);
+
+  await new Promise(r=>setTimeout(r, 300));
 
   const opt = {
     margin: [10, 12, 10, 12],
     filename: 'Recibo_' + nro + '_' + p.nombre.replace(/\s+/g,'_') + '.pdf',
     image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false },
+    html2canvas: {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      logging: false,
+      width: 700,
+      windowWidth: 700
+    },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
 
-  const pdf = await html2pdf().set(opt).from(reciboEl).toPdf().get('pdf');
+  const pdf = await html2pdf().set(opt).from(temp).toPdf().get('pdf');
   const blob = pdf.output('blob');
+
+  document.body.removeChild(temp);
 
   return { blob, filename: opt.filename, nro, persona: p, mov: m };
 }
