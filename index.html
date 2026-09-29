@@ -1938,7 +1938,7 @@ async function generarPDFRecibo(){
   return { blob, filename: opt.filename, nro, persona: p, mov: m };
 }
 
-document.getElementById('btnWhatsappRecibo').onclick = async ()=>{
+  document.getElementById('btnWhatsappRecibo').onclick = async ()=>{
   toast('Generando PDF...');
   try {
     const resultado = await generarPDFRecibo();
@@ -1950,28 +1950,28 @@ document.getElementById('btnWhatsappRecibo').onclick = async ()=>{
       try {
         await navigator.share({
           files: [file],
-          title: 'Recibo N° ' + resultado.nro + ' - Correa Unlimited'
+          title: 'Recibo N° ' + resultado.nro,
+          text: 'Recibo Correa Unlimited'
         });
         toast('PDF compartido ✓');
         return;
       } catch(e){
-        if(e.name === 'AbortError') return;
-        console.error(e);
+        if(e.name === 'AbortError'){ return; }
+        console.error('Share error:', e);
       }
     }
 
     const url = URL.createObjectURL(resultado.blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = resultado.filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(()=>URL.revokeObjectURL(url), 2000);
-    toast('PDF guardado en Archivos');
+    const win = window.open(url, '_blank');
+    if(win){
+      toast('PDF abierto — tocá Compartir en Safari');
+    } else {
+      window.location.href = url;
+    }
+
   } catch(e){
     console.error(e);
-    toast('Error al generar PDF');
+    toast('Error: ' + (e.message||'desconocido'));
   }
 };
 document.getElementById('movFecha').value = new Date().toISOString().slice(0,10);
