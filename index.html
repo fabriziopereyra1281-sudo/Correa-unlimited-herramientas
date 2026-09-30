@@ -638,6 +638,34 @@ function mostrarErrorEnPantalla(msg, color){
       <button class="btn primary" id="btnAddMovimiento">+ Agregar movimiento</button>
     </div>
 
+    <div class="card" id="formEditarMov" style="display:none">
+      <h3>Editar movimiento</h3>
+      <div class="grid" style="margin-bottom:10px">
+        <div><label class="fld">Fecha</label>
+          <input type="date" id="emFecha"></div>
+        <div><label class="fld">Monto ($)</label>
+          <input type="text" id="emMonto" inputmode="numeric" placeholder="50.000"></div>
+      </div>
+      <div class="grid" style="margin-bottom:10px">
+        <div><label class="fld">Tipo de movimiento</label>
+          <select id="emTipo">
+            <option value="adelanto">Adelanto (le diste plata)</option>
+            <option value="material">Materiales entregados</option>
+            <option value="herramienta">Herramienta prestada</option>
+            <option value="trabajo">Trabajo terminado</option>
+            <option value="pago">Pago realizado</option>
+            <option value="otro_a_favor">Otro (a tu favor)</option>
+            <option value="otro_en_contra">Otro (a favor de él)</option>
+          </select></div>
+        <div><label class="fld">Concepto / Nota</label>
+          <input type="text" id="emNota" placeholder="Adelanto para materiales"></div>
+      </div>
+      <div class="ed-actions">
+        <button class="btn primary" id="btnGuardarEditarMov">Guardar cambios</button>
+        <button class="btn ghost" id="btnCancelarEditarMov">Cancelar</button>
+      </div>
+    </div>
+
     <div class="card">
       <h3>Movimientos</h3>
       <div id="listaMovimientos"></div>
@@ -791,7 +819,7 @@ function unformatMiles(v){
   return String(v||'').replace(/\./g,'');
 }
 function activarFormatoMiles(){
-  const campos = ['pPrecio','movMonto','adjMonto','fEco','fEst','fPre'];
+  const campos = ['pPrecio','movMonto','adjMonto','fEco','fEst','fPre','emMonto'];
   campos.forEach(id=>{
     const el = document.getElementById(id);
     if(!el || el.dataset.fmtMiles) return;
@@ -1839,32 +1867,32 @@ function pintarDetalle(){
   });
 }
 
-const OPCIONES_TIPO_MOVIMIENTO = [
-  ['adelanto','Adelanto (le diste plata)'],
-  ['material','Materiales entregados'],
-  ['herramienta','Herramienta prestada'],
-  ['trabajo','Trabajo terminado'],
-  ['pago','Pago realizado'],
-  ['otro_a_favor','Otro (a tu favor)'],
-  ['otro_en_contra','Otro (a favor de él)']
-];
+let editandoMovId = null;
 function editarMovimiento(id){
   const m = cuentas.movimientos.find(x=>x.id===id);
   if(!m) return;
-  const nuevoMonto = prompt('Nuevo monto:', m.monto);
-  if(nuevoMonto===null) return;
-  const listado = OPCIONES_TIPO_MOVIMIENTO.map((o,i)=>`${i+1}. ${o[1]}`).join('\n');
-  const actual = OPCIONES_TIPO_MOVIMIENTO.findIndex(o=>o[0]===m.tipo);
-  const nuevoTipoStr = prompt(`Tipo de movimiento (escribí el número):\n${listado}`, String(actual+1));
-  if(nuevoTipoStr===null) return;
-  const opcionElegida = OPCIONES_TIPO_MOVIMIENTO[parseInt(nuevoTipoStr,10) - 1];
-  const nuevaNota = prompt('Nueva nota:', m.nota||'');
-  if(nuevaNota===null) return;
-  m.monto = Number(unformatMiles(nuevoMonto))||0;
-  m.tipo = opcionElegida ? opcionElegida[0] : m.tipo;
-  m.nota = nuevaNota;
-  guardarCuentas(); pintarDetalle(); pintarCuentas(); toast('Movimiento actualizado');
+  editandoMovId = id;
+  document.getElementById('emFecha').value = m.fecha || '';
+  document.getElementById('emMonto').value = formatMiles(m.monto);
+  document.getElementById('emTipo').value = m.tipo;
+  document.getElementById('emNota').value = m.nota || '';
+  document.getElementById('formEditarMov').style.display = 'block';
+  document.getElementById('formEditarMov').scrollIntoView({behavior:'smooth',block:'start'});
 }
+document.getElementById('btnGuardarEditarMov').onclick = ()=>{
+  const m = cuentas.movimientos.find(x=>x.id===editandoMovId);
+  if(!m) return;
+  m.fecha = document.getElementById('emFecha').value || m.fecha;
+  m.monto = Number(unformatMiles(document.getElementById('emMonto').value))||0;
+  m.tipo = document.getElementById('emTipo').value;
+  m.nota = document.getElementById('emNota').value.trim();
+  guardarCuentas(); pintarDetalle(); pintarCuentas();
+  document.getElementById('formEditarMov').style.display = 'none';
+  toast('Movimiento actualizado');
+};
+document.getElementById('btnCancelarEditarMov').onclick = ()=>{
+  document.getElementById('formEditarMov').style.display = 'none';
+};
 
 document.getElementById('btnAddMovimiento').onclick = ()=>{
   if(!personaActivaId){ toast('Elegí una persona'); return; }
