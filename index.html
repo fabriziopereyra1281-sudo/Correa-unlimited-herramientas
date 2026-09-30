@@ -1639,6 +1639,7 @@ function guardarCuentas(){ localStorage.setItem(KEY_CUENTAS, JSON.stringify(cuen
 
 const signoDe = (tipo)=>{
   if(tipo==='adelanto'||tipo==='material'||tipo==='herramienta'||tipo==='otro_a_favor'||tipo==='pago') return 1;
+  return -1; // trabajo, otro_en_contra: suman a favor de él
 };
 const nombreTipo = (t)=>{
   return ({
