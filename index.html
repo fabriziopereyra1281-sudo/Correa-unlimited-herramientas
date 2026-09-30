@@ -602,6 +602,7 @@ function mostrarErrorEnPantalla(msg, color){
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn sm" id="btnEditarPersona">Editar</button>
+          <button class="btn sm danger" id="btnBorrarPersona">Borrar</button>
           <button class="btn sm" id="btnCerrarDetalle">Cerrar</button>
         </div>
       </div>
@@ -1800,6 +1801,19 @@ document.getElementById('btnCerrarDetalle').onclick = ()=>{
 };
 document.getElementById('btnEditarPersona').onclick = ()=>{
   if(personaActivaId) abrirFormPersona(personaActivaId);
+};
+document.getElementById('btnBorrarPersona').onclick = ()=>{
+  if(!personaActivaId) return;
+  const p = getPersona(personaActivaId);
+  if(!p) return;
+  if(!confirm(`¿Borrar a "${p.nombre}"? También se borran sus movimientos cargados. Esta acción no se puede deshacer.`)) return;
+  cuentas.personas = cuentas.personas.filter(x=>x.id!==personaActivaId);
+  cuentas.movimientos = cuentas.movimientos.filter(m=>m.personaId!==personaActivaId);
+  guardarCuentas();
+  personaActivaId = null;
+  document.getElementById('detallePersona').style.display = 'none';
+  pintarCuentas();
+  toast('Persona borrada');
 };
 
 function pintarDetalle(){
