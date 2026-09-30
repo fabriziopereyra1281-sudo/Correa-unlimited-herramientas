@@ -1534,7 +1534,7 @@ function pintarAdicionales(){
 
 document.getElementById('adjAdd').onclick = ()=>{
   const fecha = document.getElementById('adjFecha').value;
-  const monto = Number(document.getElementById('adjMonto').value)||0;
+  const monto = Number(unformatMiles(document.getElementById('adjMonto').value))||0;
   const desc = document.getElementById('adjDesc').value.trim();
   const estado = document.getElementById('adjEstado').value;
   const cat = document.getElementById('adjCat').value;
@@ -1825,7 +1825,7 @@ function editarMovimiento(id){
 document.getElementById('btnAddMovimiento').onclick = ()=>{
   if(!personaActivaId){ toast('Elegí una persona'); return; }
   const fecha = document.getElementById('movFecha').value || new Date().toISOString().slice(0,10);
-  const monto = Number(document.getElementById('movMonto').value)||0;
+  const monto = Number(unformatMiles(document.getElementById('movMonto').value))||0;
   const tipo = document.getElementById('movTipo').value;
   const nota = document.getElementById('movNota').value.trim();
   const fotoInput = document.getElementById('movFoto');
