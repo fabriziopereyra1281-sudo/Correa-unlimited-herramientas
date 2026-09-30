@@ -166,14 +166,15 @@ function mostrarErrorEnPantalla(msg, color){
               padding:16px;margin-top:12px}
   .plant-form h4{margin:0 0 12px;font-size:13px;font-weight:700}
 
-  .tarea-row{display:grid;grid-template-columns:1.5fr 1fr .55fr .55fr .55fr .55fr .9fr 28px;
+  .tarea-row{display:grid;grid-template-columns:22px 1.5fr 1fr .55fr .55fr .55fr .55fr .9fr 28px;
              gap:5px;align-items:center;margin-bottom:7px;font-size:12px}
   .tarea-row input,.tarea-row select{padding:7px 6px;font-size:12px;border-radius:7px;text-align:center}
   .tarea-row input[type=text]{text-align:left}
   .tarea-row select{text-align:left}
+  .tarea-row .num{color:var(--muted);font-weight:700;text-align:center;font-size:11px}
   .tarea-row .del{background:transparent;border:0;color:var(--muted);cursor:pointer;font-size:16px;padding:4px}
   .tarea-row .del:hover{color:var(--bad)}
-  .thead{display:grid;grid-template-columns:1.5fr 1fr .55fr .55fr .55fr .55fr .9fr 28px;
+  .thead{display:grid;grid-template-columns:22px 1.5fr 1fr .55fr .55fr .55fr .55fr .9fr 28px;
          gap:5px;font-size:9px;text-transform:uppercase;letter-spacing:.06em;
          color:var(--muted);font-weight:700;margin-bottom:6px;padding:0 2px}
   .thead span{text-align:center} .thead span:first-child{text-align:left}
@@ -226,7 +227,7 @@ function mostrarErrorEnPantalla(msg, color){
     .kpis{grid-template-columns:1fr 1fr;gap:8px}
     .tab{font-size:10px;padding:9px 4px}
     header img{max-width:120px}
-    .tarea-row,.thead{grid-template-columns:1.3fr .9fr .5fr .5fr .5fr .5fr .8fr 24px;font-size:10px;gap:3px}
+    .tarea-row,.thead{grid-template-columns:18px 1.3fr .9fr .5fr .5fr .5fr .5fr .8fr 24px;font-size:10px;gap:3px}
     .tarea-row input,.tarea-row select{padding:6px 4px;font-size:11px}
     .gantt{min-width:560px}
     .gantt-head,.gantt-row{grid-template-columns:120px 1fr;gap:6px}
@@ -387,7 +388,7 @@ function mostrarErrorEnPantalla(msg, color){
       <div id="fEtapas"></div>
       <label class="fld" style="margin-top:14px">Tareas del plan semanal</label>
       <div class="thead">
-        <span>Tarea</span><span>Rubro</span><span>Inicio</span><span>Sem.</span>
+        <span>#</span><span>Tarea</span><span>Rubro</span><span>Inicio</span><span>Sem.</span>
         <span>Of.</span><span>Ay.</span><span>Materiales</span><span></span>
       </div>
       <div id="fTareas"></div>
@@ -1146,6 +1147,7 @@ function pintarFormTareas(tareas, rubros){
   box.innerHTML = formTareas.map((t,i)=>{
     const opts = rubros.map(r=>`<option value="${r.id}" ${r.id===t.rubro?'selected':''}>${r.nombre}</option>`).join('');
     return `<div class="tarea-row" data-i="${i}">
+      <span class="num">${i+1}</span>
       <input type="text" class="ft-nombre" value="${t.nombre}">
       <select class="ft-rubro">${opts}</select>
       <input type="number" class="ft-inicio" value="${t.inicio}" min="1" step="1">
