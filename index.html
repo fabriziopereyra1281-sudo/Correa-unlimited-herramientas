@@ -796,9 +796,12 @@ function activarFormatoMiles(){
     const el = document.getElementById(id);
     if(!el || el.dataset.fmtMiles) return;
     el.dataset.fmtMiles = '1';
-    el.addEventListener('focus', ()=>{ el.value = unformatMiles(el.value); });
-    el.addEventListener('input', ()=>{ el.value = el.value.replace(/\D/g,''); });
-    el.addEventListener('blur', ()=>{ if(el.value) el.value = formatMiles(el.value); });
+    el.addEventListener('input', ()=>{
+      const desdeElFinal = el.value.length - (el.selectionStart||el.value.length);
+      el.value = formatMiles(el.value);
+      const nuevaPos = Math.max(0, el.value.length - desdeElFinal);
+      try{ el.setSelectionRange(nuevaPos, nuevaPos); }catch(e){}
+    });
   });
 }
 function fmtHora(iso){
