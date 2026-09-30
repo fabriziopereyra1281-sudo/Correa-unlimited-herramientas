@@ -6,6 +6,11 @@
 <title>Correa Unlimited</title>
 <script>
 window.addEventListener('error', function(ev){
+  // "Script error." sin archivo/línea es un error de un script de otro
+  // dominio (ej: la librería de PDF de cdnjs) — el navegador no da detalles
+  // por seguridad, así que no es diagnosticable ni indica un problema real
+  // en esta app. Se ignora para no generar alarmas falsas.
+  if((ev.message||'') === 'Script error.' && !ev.filename) return;
   var msg = 'ERROR JS: ' + (ev.message || ev.type || 'desconocido') +
     '\n' + (ev.filename || '') + ':' + (ev.lineno || '?') + ':' + (ev.colno || '?');
   if (ev.error && ev.error.stack) msg += '\n' + ev.error.stack;
