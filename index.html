@@ -1,10 +1,35 @@
-<!DOCTYPE ht. ml>
+<!DOCTYPE html>
 <html lang="es">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Correa Unlimited</title>
+<script>
+window.addEventListener('error', function(ev){
+  var msg = 'ERROR JS: ' + (ev.message || ev.type || 'desconocido') +
+    '\n' + (ev.filename || '') + ':' + (ev.lineno || '?') + ':' + (ev.colno || '?');
+  if (ev.error && ev.error.stack) msg += '\n' + ev.error.stack;
+  mostrarErrorEnPantalla(msg, '#b91c1c');
+});
+window.addEventListener('unhandledrejection', function(ev){
+  var reason = ev.reason;
+  var msg = 'PROMISE ERROR: ' + (reason && reason.message ? reason.message : String(reason));
+  mostrarErrorEnPantalla(msg, '#92400e');
+});
+function mostrarErrorEnPantalla(msg, color){
+  function pintar(){
+    var box = document.createElement('div');
+    box.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:2147483647;' +
+      'background:' + color + ';color:#fff;padding:10px 14px;' +
+      'font:11px/1.4 monospace;white-space:pre-wrap;max-height:60vh;overflow:auto';
+    box.textContent = msg;
+    (document.body || document.documentElement).appendChild(box);
+  }
+  if (document.body) pintar();
+  else document.addEventListener('DOMContentLoaded', pintar);
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
   :root{--bg:#f4f5f7;--card:#fff;--ink:#16191d;--muted:#6b7280;--line:#e4e6ea;
         --accent:#2563eb;--accent-soft:#eff6ff;--ok:#15803d;--ok-soft:#e9f7ee;
