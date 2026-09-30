@@ -368,13 +368,13 @@ function mostrarErrorEnPantalla(msg, color){
         <div><label class="fld">Label unidad</label>
           <input type="text" id="fLabel" placeholder="m² / cancha"></div>
         <div><label class="fld">Precio económica</label>
-          <input type="text" id="fEco" inputmode="numeric"></div>
+          <input type="text" id="fEco" inputmode="decimal"></div>
         <div><label class="fld">Precio estándar</label>
-          <input type="text" id="fEst" inputmode="numeric"></div>
+          <input type="text" id="fEst" inputmode="decimal"></div>
       </div>
       <div class="grid3" style="margin-bottom:12px">
         <div><label class="fld">Precio premium</label>
-          <input type="text" id="fPre" inputmode="numeric"></div>
+          <input type="text" id="fPre" inputmode="decimal"></div>
         <div><label class="fld">Anticipo mín (%)</label>
           <input type="number" id="fAntMin" step="5" min="0" max="100"></div>
         <div><label class="fld">Anticipo máx (%)</label>
@@ -507,7 +507,7 @@ function mostrarErrorEnPantalla(msg, color){
         <div><label class="fld">Fecha</label>
           <input type="date" id="adjFecha"></div>
         <div><label class="fld">Monto ($)</label>
-          <input type="text" id="adjMonto" inputmode="numeric"></div>
+          <input type="text" id="adjMonto" inputmode="decimal"></div>
       </div>
       <div style="margin-bottom:10px">
         <label class="fld">Descripción</label>
@@ -586,7 +586,7 @@ function mostrarErrorEnPantalla(msg, color){
           <option value="cerrado">Precio cerrado</option>
         </select></div>
       <div><label class="fld" id="lblPrecio">Precio unitario ($)</label>
-        <input type="text" id="pPrecio" inputmode="numeric" placeholder="8.000"></div>
+        <input type="text" id="pPrecio" inputmode="decimal" placeholder="8.000"></div>
     </div>
     <div style="margin-bottom:12px">
       <label class="fld">Teléfono (WhatsApp)</label>
@@ -621,7 +621,7 @@ function mostrarErrorEnPantalla(msg, color){
         <div><label class="fld">Fecha</label>
           <input type="date" id="movFecha"></div>
         <div><label class="fld">Monto ($)</label>
-          <input type="text" id="movMonto" inputmode="numeric" placeholder="50.000"></div>
+          <input type="text" id="movMonto" inputmode="decimal" placeholder="50.000"></div>
       </div>
       <div class="grid" style="margin-bottom:10px">
         <div><label class="fld">Tipo de movimiento</label>
@@ -650,7 +650,7 @@ function mostrarErrorEnPantalla(msg, color){
         <div><label class="fld">Fecha</label>
           <input type="date" id="emFecha"></div>
         <div><label class="fld">Monto ($)</label>
-          <input type="text" id="emMonto" inputmode="numeric" placeholder="50.000"></div>
+          <input type="text" id="emMonto" inputmode="decimal" placeholder="50.000"></div>
       </div>
       <div class="grid" style="margin-bottom:10px">
         <div><label class="fld">Tipo de movimiento</label>
@@ -817,12 +817,25 @@ const num = n => (Math.round(n*10)/10).toLocaleString('es-AR');
 const unidadTxt = {unidad:'/unidad', m2:'/m²', dia:'/día', hora:'/hora', cerrado:'obra'};
 function formatMiles(v){
   if(v === '' || v === null || v === undefined) return '';
-  const n = String(v).replace(/\D/g,'');
-  if(!n) return '';
-  return n.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  const partes = String(v).split(',');
+  let entero = partes[0].replace(/\D/g,'');
+  entero = entero.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  if(partes.length > 1){
+    const decimales = partes[1].replace(/\D/g,'').slice(0,2);
+    return (entero||'0') + ',' + decimales;
+  }
+  return entero;
+}
+function formatMilesNum(n){
+  // Para precargar un campo desde un número guardado (no desde lo que
+  // tipea el usuario): JS siempre convierte los decimales con punto
+  // (525.25), nunca con coma, así que hay que pasarlo a coma antes de
+  // formatear — si no, formatMiles interpreta mal el punto.
+  if(n === null || n === undefined || n === '') return '';
+  return formatMiles(String(n).replace('.', ','));
 }
 function unformatMiles(v){
-  return String(v||'').replace(/\./g,'');
+  return String(v||'').replace(/\./g,'').replace(',', '.');
 }
 function activarFormatoMiles(){
   const campos = ['pPrecio','movMonto','adjMonto','fEco','fEst','fPre','emMonto'];
@@ -1037,9 +1050,9 @@ function abrirFormPlantilla(id){
     document.getElementById('fNombre').value = p.nombre;
     document.getElementById('fUnidad').value = p.unidad || 'm2';
     document.getElementById('fLabel').value = p.label || '';
-    document.getElementById('fEco').value = p.precios.economica;
-    document.getElementById('fEst').value = p.precios.estandar;
-    document.getElementById('fPre').value = p.precios.premium;
+    document.getElementById('fEco').value = formatMilesNum(p.precios.economica);
+    document.getElementById('fEst').value = formatMilesNum(p.precios.estandar);
+    document.getElementById('fPre').value = formatMilesNum(p.precios.premium);
     document.getElementById('fAntMin').value = p.anticipoMin;
     document.getElementById('fAntMax').value = p.anticipoMax;
   } else {
@@ -1744,7 +1757,7 @@ function abrirFormPersona(id){
   document.getElementById('pOficio').value = p ? p.oficio : '';
   document.getElementById('pObra').value = p ? p.obra : '';
   document.getElementById('pFormaCobro').value = p ? p.formaCobro : 'unidad';
-  document.getElementById('pPrecio').value = p && p.precioUnitario ? formatMiles(p.precioUnitario) : '';
+  document.getElementById('pPrecio').value = p && p.precioUnitario ? formatMilesNum(p.precioUnitario) : '';
   document.getElementById('pTelefono').value = p ? p.telefono : '';
   document.getElementById('formPersona').scrollIntoView({behavior:'smooth',block:'start'});
   const selCobro = document.getElementById('pFormaCobro');
@@ -1892,7 +1905,7 @@ function editarMovimiento(id){
   if(!m) return;
   editandoMovId = id;
   document.getElementById('emFecha').value = m.fecha || '';
-  document.getElementById('emMonto').value = formatMiles(m.monto);
+  document.getElementById('emMonto').value = formatMilesNum(m.monto);
   document.getElementById('emTipo').value = m.tipo;
   document.getElementById('emNota').value = m.nota || '';
   document.getElementById('formEditarMov').style.display = 'block';
