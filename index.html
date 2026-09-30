@@ -780,6 +780,7 @@ const usd = n => 'US$ ' + Math.round(n).toLocaleString('es-AR');
 const ars = n => '$ ' + Math.round(n).toLocaleString('es-AR');
 const pct = n => (Math.round(n*10)/10).toLocaleString('es-AR') + '%';
 const num = n => (Math.round(n*10)/10).toLocaleString('es-AR');
+const unidadTxt = {unidad:'/unidad', m2:'/m²', dia:'/día', hora:'/hora', cerrado:'obra'};
 function fmtHora(iso){
   const d = new Date(iso);
   const dd = String(d.getDate()).padStart(2,'0');
