@@ -389,8 +389,6 @@ function mostrarErrorEnPantalla(msg, color){
       <label class="fld" style="margin-top:10px">Rubros del presupuesto</label>
       <div id="fRubros"></div>
       <div class="sum" id="fSumRubros"></div>
-      <label class="fld" style="margin-top:14px">Etapas y duración (meses)</label>
-      <div id="fEtapas"></div>
       <label class="fld" style="margin-top:14px">Tareas del plan semanal</label>
       <div class="thead">
         <span>#</span><span>Tarea</span><span>Rubro</span><span>Inicio</span><span>Sem.</span>
@@ -713,13 +711,6 @@ const PLANTILLAS_BASE = [
       { id:'acabados',     nombre:'Acabados y carpinterías',    pct:28 },
       { id:'gestion',      nombre:'Gestión y honorarios',       pct:8  }
     ],
-    etapas: [
-      { nombre:'Suelos y fundaciones', meses:1.5, pct:9  },
-      { nombre:'Estructura',           meses:1.5, pct:13 },
-      { nombre:'Mampostería y techos', meses:2,   pct:24 },
-      { nombre:'Instalaciones',        meses:2,   pct:18 },
-      { nombre:'Acabados',             meses:2.5, pct:28 }
-    ],
     tareas: [
       { nombre:'Demolición',               rubro:'estructura',    inicio:1,  semanas:1, oficial:1, ayudante:1, materiales:80000  },
       { nombre:'Excavación y fundaciones', rubro:'estructura',    inicio:2,  semanas:2, oficial:1, ayudante:1, materiales:250000 },
@@ -746,14 +737,6 @@ const PLANTILLAS_BASE = [
       { id:'canchas',    nombre:'Canchas (césped, malla)', pct:30 },
       { id:'instal',     nombre:'Instalaciones',           pct:12 },
       { id:'gestion',    nombre:'Gestión y honorarios',    pct:5  }
-    ],
-    etapas: [
-      { nombre:'Movimiento de suelos', meses:1,   pct:8  },
-      { nombre:'Estructura',           meses:1.5, pct:25 },
-      { nombre:'Cerramientos',         meses:1,   pct:20 },
-      { nombre:'Canchas',              meses:2,   pct:30 },
-      { nombre:'Instalaciones',        meses:1,   pct:12 },
-      { nombre:'Terminaciones',        meses:0.5, pct:5  }
     ],
     tareas: [
       { nombre:'Nivelación del terreno', rubro:'suelos',     inicio:1, semanas:2, oficial:2, ayudante:2, materiales:1500000 },
@@ -782,7 +765,7 @@ let plantillaActiva = plantillas[0].id;
 let nivel = 'estandar';
 let adicionales = cargarAdicionales();
 let editandoId = null;
-let formRubros = [], formEtapas = [], formTareas = [];
+let formRubros = [], formTareas = [];
 
 function cargarPlantillas(){
   try{
@@ -1093,11 +1076,9 @@ function abrirFormPlantilla(id){
   }
 
   const rubros = p ? p.rubros : structuredClone(PLANTILLAS_BASE[0].rubros);
-  const etapas = p ? p.etapas : structuredClone(PLANTILLAS_BASE[0].etapas);
   const tareas = p ? p.tareas : structuredClone(PLANTILLAS_BASE[0].tareas);
 
   pintarFormRubros(rubros);
-  pintarFormEtapas(etapas);
   pintarFormTareas(tareas, rubros);
 
   document.getElementById('plantForm').scrollIntoView({behavior:'smooth',block:'start'});
@@ -1139,31 +1120,6 @@ function sumarFormRubros(){
   const el = document.getElementById('fSumRubros');
   el.textContent = `Suma rubros: ${num(s)}% ${Math.abs(s-100)<0.1?'✓':'— debe dar 100%'}`;
   el.className = 'sum ' + (Math.abs(s-100)<0.1?'ok':'bad');
-}
-
-function pintarFormEtapas(etapas){
-  formEtapas = structuredClone(etapas);
-  const box = document.getElementById('fEtapas');
-  box.innerHTML = formEtapas.map((e,i)=>`
-    <div class="ed-row" style="grid-template-columns:1fr 90px 32px">
-      <input type="text" class="fe-nombre" data-i="${i}" value="${e.nombre}">
-      <input type="number" class="fe-meses" data-i="${i}" value="${e.meses}" step="0.5" min="0.5">
-      <button class="rowbtn del" data-del="${i}">×</button>
-    </div>`).join('') +
-    `<button class="btn sm" id="fAddEtapa">+ Etapa</button>`;
-  box.querySelectorAll('.fe-nombre').forEach(inp=>{
-    inp.oninput = e=>{ formEtapas[inp.dataset.i].nombre = e.target.value; };
-  });
-  box.querySelectorAll('.fe-meses').forEach(inp=>{
-    inp.oninput = e=>{ formEtapas[inp.dataset.i].meses = Math.max(0.5, Number(e.target.value)||0.5); };
-  });
-  box.querySelectorAll('[data-del]').forEach(btn=>{
-    btn.onclick = ()=>{ formEtapas.splice(Number(btn.dataset.del),1); pintarFormEtapas(formEtapas); };
-  });
-  document.getElementById('fAddEtapa').onclick = ()=>{
-    formEtapas.push({ nombre:'Nueva etapa', meses:1, pct:0 });
-    pintarFormEtapas(formEtapas);
-  };
 }
 
 function pintarFormTareas(tareas, rubros){
@@ -1243,7 +1199,6 @@ document.getElementById('fGuardar').onclick = ()=>{
     anticipoMin: Number(document.getElementById('fAntMin').value)||0,
     anticipoMax: Number(document.getElementById('fAntMax').value)||0,
     rubros: structuredClone(formRubros),
-    etapas: structuredClone(formEtapas),
     tareas: structuredClone(formTareas)
   };
   if(editandoId){
@@ -1261,6 +1216,22 @@ document.getElementById('fGuardar').onclick = ()=>{
 };
 
 /* ===== CASH FLOW ===== */
+function pesoMesesDeTareas(p){
+  const jor = GLOBAL.jornales || { oficial:0, ayudante:0, dias:5 };
+  const pesoMes = {};
+  p.tareas.forEach(t=>{
+    const moSem = (t.oficial*jor.oficial + t.ayudante*jor.ayudante) * jor.dias;
+    const matSem = t.materiales / t.semanas;
+    const costoSem = moSem + matSem;
+    for(let s=t.inicio; s<t.inicio+t.semanas; s++){
+      const m = Math.floor((s-1)/4.345);
+      pesoMes[m] = (pesoMes[m]||0) + costoSem;
+    }
+  });
+  const sumPeso = Object.values(pesoMes).reduce((a,b)=>a+b,0) || 1;
+  return { pesoMes, sumPeso };
+}
+
 function calcularCash(){
   const { p, total } = datosBase();
   const antPct = Math.min(90, Math.max(0, Number(document.getElementById('antPct').value)))/100;
@@ -1269,19 +1240,7 @@ function calcularCash(){
   const semanas = duracionSemanal();
   const nMeses = Math.max(1, Math.ceil(semanas/4.3));
 
-  const pesoMes = {};
-  const cursorIni = {};
-  let cursor = 0;
-  p.etapas.forEach(e=>{
-    const s = cursor, en = cursor + e.meses;
-    cursorIni[e.nombre] = s;
-    for(let m=Math.floor(s); m<Math.ceil(en); m++){
-      const ov = Math.min(en,m+1) - Math.max(s,m);
-      if(ov>0) pesoMes[m] = (pesoMes[m]||0) + (ov/e.meses)*(e.pct||0);
-    }
-    cursor = en;
-  });
-  const sumPeso = Object.values(pesoMes).reduce((a,b)=>a+b,0) || 1;
+  const { pesoMes, sumPeso } = pesoMesesDeTareas(p);
   const factor = 100/sumPeso;
 
   const filas = [];
