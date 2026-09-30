@@ -1599,6 +1599,18 @@ function cargarCuentas(){
   }catch(e){}
   return { personas: [], movimientos: [], nroRecibo: 1 };
 }
+  function activarFormatoMiles(){
+  const campos = ['pPrecio','movMonto','adjMonto','fEco','fEst','fPre'];
+  campos.forEach(id=>{
+    const el = document.getElementById(id);
+    if(!el || el.dataset.fmtMiles) return;
+    el.dataset.fmtMiles = '1';
+    el.addEventListener('focus', ()=>{ el.value = unformatMiles(el.value); });
+    el.addEventListener('input', ()=>{ el.value = el.value.replace(/\D/g,''); });
+    el.addEventListener('blur', ()=>{ if(el.value) el.value = formatMiles(el.value); });
+  });
+}
+
 function guardarCuentas(){ localStorage.setItem(KEY_CUENTAS, JSON.stringify(cuentas)); }
 
 const signoDe = (tipo)=>{
@@ -2004,7 +2016,7 @@ calcularCash();
 calcularPlan();
 calcularGantt();
 pintarAdicionales();
-
+activarFormatoMiles();
 </script>
 </body>
 </html>
