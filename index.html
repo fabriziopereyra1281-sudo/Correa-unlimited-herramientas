@@ -1663,6 +1663,13 @@ function abrirFormPersona(id){
   document.getElementById('pPrecio').value = p ? p.precioUnitario : '';
   document.getElementById('pTelefono').value = p ? p.telefono : '';
   document.getElementById('formPersona').scrollIntoView({behavior:'smooth',block:'start'});
+  const selCobro = document.getElementById('pFormaCobro');
+  const lblPrecio = document.getElementById('lblPrecio');
+  const mapaPrecio = {unidad:'Precio por unidad ($)', m2:'Precio por m² ($)', dia:'Precio por día ($)', hora:'Precio por hora ($)', cerrado:'Precio por trabajo ($)'};
+  const unidadTxt = {unidad:'/unidad', m2:'/m²', dia:'/día', hora:'/hora', cerrado:'obra'};
+  const updLabel = () => { lblPrecio.textContent = mapaPrecio[selCobro.value] || 'Precio unitario ($)'; };
+  selCobro.onchange = updLabel;
+  updLabel();
 }
 
 document.getElementById('btnNuevaPersona').onclick = ()=>abrirFormPersona(null);
