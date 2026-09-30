@@ -1123,9 +1123,9 @@ document.getElementById('fGuardar').onclick = ()=>{
     id: editandoId || nuevoId(),
     nombre, unidad, label,
     precios: {
-      economica: Number(document.getElementById('fEco').value)||0,
-      estandar: Number(document.getElementById('fEst').value)||0,
-      premium: Number(document.getElementById('fPre').value)||0
+      economica: Number(unformatMiles(document.getElementById('fEco').value))||0,
+      estandar: Number(unformatMiles(document.getElementById('fEst').value))||0,
+     premium: Number(unformatMiles(document.getElementById('fPre').value))||0,
     },
     anticipoMin: Number(document.getElementById('fAntMin').value)||0,
     anticipoMax: Number(document.getElementById('fAntMax').value)||0,
@@ -1682,7 +1682,7 @@ function abrirFormPersona(id){
   document.getElementById('pOficio').value = p ? p.oficio : '';
   document.getElementById('pObra').value = p ? p.obra : '';
   document.getElementById('pFormaCobro').value = p ? p.formaCobro : 'unidad';
-  document.getElementById('pPrecio').value = p ? p.precioUnitario : '';
+  document.getElementById('pPrecio').value = p && p.precioUnitario ? formatMiles(p.precioUnitario) : '';
   document.getElementById('pTelefono').value = p ? p.telefono : '';
   document.getElementById('formPersona').scrollIntoView({behavior:'smooth',block:'start'});
   const selCobro = document.getElementById('pFormaCobro');
@@ -1708,7 +1708,7 @@ document.getElementById('btnGuardarPersona').onclick = ()=>{
     oficio: document.getElementById('pOficio').value.trim(),
     obra: document.getElementById('pObra').value.trim(),
     formaCobro: document.getElementById('pFormaCobro').value,
-    precioUnitario: Number(document.getElementById('pPrecio').value)||0,
+    precioUnitario: Number(unformatMiles(document.getElementById('pPrecio').value))||0,
     telefono: document.getElementById('pTelefono').value.trim()
   };
   if(editId){
