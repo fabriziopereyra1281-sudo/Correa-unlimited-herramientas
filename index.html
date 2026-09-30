@@ -338,13 +338,13 @@
         <div><label class="fld">Label unidad</label>
           <input type="text" id="fLabel" placeholder="m² / cancha"></div>
         <div><label class="fld">Precio económica</label>
-          <input type="text" id="fEco" inputmode="numeric"></div>
+          <input type="number" id="fEco" step="10" min="0"></div>
         <div><label class="fld">Precio estándar</label>
-          <input type="text" id="fEst" inputmode="numeric"></div>
+          <input type="number" id="fEst" step="10" min="0"></div>
       </div>
       <div class="grid3" style="margin-bottom:12px">
         <div><label class="fld">Precio premium</label>
-          <input type="text" id="fPre" inputmode="numeric"></div>
+          <input type="number" id="fPre" step="10" min="0"></div>
         <div><label class="fld">Anticipo mín (%)</label>
           <input type="number" id="fAntMin" step="5" min="0" max="100"></div>
         <div><label class="fld">Anticipo máx (%)</label>
@@ -477,7 +477,7 @@
         <div><label class="fld">Fecha</label>
           <input type="date" id="adjFecha"></div>
         <div><label class="fld">Monto ($)</label>
-          <input type="text" id="adjMonto" inputmode="numeric"></div>
+          <input type="number" id="adjMonto" step="1000" min="0"></div>
       </div>
       <div style="margin-bottom:10px">
         <label class="fld">Descripción</label>
@@ -556,7 +556,7 @@
           <option value="cerrado">Precio cerrado</option>
         </select></div>
       <label class="fld" id="lblPrecio">Precio unitario ($)</label>
-    <input type="text" id="pPrecio" inputmode="numeric" placeholder="8.000"></div>
+        <input type="number" id="pPrecio" step="100" min="0" placeholder="8000"></div>
     </div>
     <div style="margin-bottom:12px">
       <label class="fld">Teléfono (WhatsApp)</label>
@@ -590,7 +590,7 @@
         <div><label class="fld">Fecha</label>
           <input type="date" id="movFecha"></div>
         <div><label class="fld">Monto ($)</label>
-          <input type="text" id="movMonto" inputmode="numeric" placeholder="50.000"></div>
+          <input type="number" id="movMonto" step="100" min="0" placeholder="50000"></div>
       </div>
       <div class="grid" style="margin-bottom:10px">
         <div><label class="fld">Tipo de movimiento</label>
@@ -750,16 +750,6 @@ function guardarAdicionales(){
 function getPlantilla(){ return plantillas.find(p=>p.id===plantillaActiva) || plantillas[0]; }
 function getPlantillaPorId(id){ return plantillas.find(p=>p.id===id); }
 function nuevoId(){ return 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2,5); }
-
-function formatMiles(v){
-  if(v === '' || v === null || v === undefined) return '';
-  const n = String(v).replace(/\D/g,'');
-  if(!n) return '';
-  return n.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-}
-function unformatMiles(v){
-  return String(v||'').replace(/\./g,'');
-}
 
 const usd = n => 'US$ ' + Math.round(n).toLocaleString('es-AR');
 const ars = n => '$ ' + Math.round(n).toLocaleString('es-AR');
@@ -1123,9 +1113,9 @@ document.getElementById('fGuardar').onclick = ()=>{
     id: editandoId || nuevoId(),
     nombre, unidad, label,
     precios: {
-      economica: Number(unformatMiles(document.getElementById('fEco').value))||0,
-      estandar: Number(unformatMiles(document.getElementById('fEst').value))||0,
-     premium: Number(unformatMiles(document.getElementById('fPre').value))||0,
+      economica: Number(document.getElementById('fEco').value)||0,
+      estandar: Number(document.getElementById('fEst').value)||0,
+      premium: Number(document.getElementById('fPre').value)||0
     },
     anticipoMin: Number(document.getElementById('fAntMin').value)||0,
     anticipoMax: Number(document.getElementById('fAntMax').value)||0,
@@ -1534,7 +1524,7 @@ function pintarAdicionales(){
 
 document.getElementById('adjAdd').onclick = ()=>{
   const fecha = document.getElementById('adjFecha').value;
-  const monto = Number(unformatMiles(document.getElementById('adjMonto').value))||0;
+  const monto = Number(document.getElementById('adjMonto').value)||0;
   const desc = document.getElementById('adjDesc').value.trim();
   const estado = document.getElementById('adjEstado').value;
   const cat = document.getElementById('adjCat').value;
@@ -1599,18 +1589,6 @@ function cargarCuentas(){
   }catch(e){}
   return { personas: [], movimientos: [], nroRecibo: 1 };
 }
-  function activarFormatoMiles(){
-  const campos = ['pPrecio','movMonto','adjMonto','fEco','fEst','fPre'];
-  campos.forEach(id=>{
-    const el = document.getElementById(id);
-    if(!el || el.dataset.fmtMiles) return;
-    el.dataset.fmtMiles = '1';
-    el.addEventListener('focus', ()=>{ el.value = unformatMiles(el.value); });
-    el.addEventListener('input', ()=>{ el.value = el.value.replace(/\D/g,''); });
-    el.addEventListener('blur', ()=>{ if(el.value) el.value = formatMiles(el.value); });
-  });
-}
-
 function guardarCuentas(){ localStorage.setItem(KEY_CUENTAS, JSON.stringify(cuentas)); }
 
 const signoDe = (tipo)=>{
@@ -1682,12 +1660,13 @@ function abrirFormPersona(id){
   document.getElementById('pOficio').value = p ? p.oficio : '';
   document.getElementById('pObra').value = p ? p.obra : '';
   document.getElementById('pFormaCobro').value = p ? p.formaCobro : 'unidad';
-  document.getElementById('pPrecio').value = p && p.precioUnitario ? formatMiles(p.precioUnitario) : '';
+  document.getElementById('pPrecio').value = p ? p.precioUnitario : '';
   document.getElementById('pTelefono').value = p ? p.telefono : '';
   document.getElementById('formPersona').scrollIntoView({behavior:'smooth',block:'start'});
   const selCobro = document.getElementById('pFormaCobro');
   const lblPrecio = document.getElementById('lblPrecio');
   const mapaPrecio = {unidad:'Precio por unidad ($)', m2:'Precio por m² ($)', dia:'Precio por día ($)', hora:'Precio por hora ($)', cerrado:'Precio por trabajo ($)'};
+  const unidadTxt = {unidad:'/unidad', m2:'/m²', dia:'/día', hora:'/hora', cerrado:'obra'};
   const updLabel = () => { lblPrecio.textContent = mapaPrecio[selCobro.value] || 'Precio unitario ($)'; };
   selCobro.onchange = updLabel;
   updLabel();
@@ -1708,7 +1687,7 @@ document.getElementById('btnGuardarPersona').onclick = ()=>{
     oficio: document.getElementById('pOficio').value.trim(),
     obra: document.getElementById('pObra').value.trim(),
     formaCobro: document.getElementById('pFormaCobro').value,
-    precioUnitario: Number(unformatMiles(document.getElementById('pPrecio').value))||0,
+    precioUnitario: Number(document.getElementById('pPrecio').value)||0,
     telefono: document.getElementById('pTelefono').value.trim()
   };
   if(editId){
@@ -1825,7 +1804,7 @@ function editarMovimiento(id){
 document.getElementById('btnAddMovimiento').onclick = ()=>{
   if(!personaActivaId){ toast('Elegí una persona'); return; }
   const fecha = document.getElementById('movFecha').value || new Date().toISOString().slice(0,10);
-  const monto = Number(unformatMiles(document.getElementById('movMonto').value))||0;
+  const monto = Number(document.getElementById('movMonto').value)||0;
   const tipo = document.getElementById('movTipo').value;
   const nota = document.getElementById('movNota').value.trim();
   const fotoInput = document.getElementById('movFoto');
@@ -2016,7 +1995,7 @@ calcularCash();
 calcularPlan();
 calcularGantt();
 pintarAdicionales();
-activarFormatoMiles();
+
 </script>
 </body>
 </html>
