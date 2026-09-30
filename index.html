@@ -751,6 +751,16 @@ function getPlantilla(){ return plantillas.find(p=>p.id===plantillaActiva) || pl
 function getPlantillaPorId(id){ return plantillas.find(p=>p.id===id); }
 function nuevoId(){ return 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2,5); }
 
+function formatMiles(v){
+  if(v === '' || v === null || v === undefined) return '';
+  const n = String(v).replace(/\D/g,'');
+  if(!n) return '';
+  return n.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+function unformatMiles(v){
+  return String(v||'').replace(/\./g,'');
+}
+
 const usd = n => 'US$ ' + Math.round(n).toLocaleString('es-AR');
 const ars = n => '$ ' + Math.round(n).toLocaleString('es-AR');
 const pct = n => (Math.round(n*10)/10).toLocaleString('es-AR') + '%';
