@@ -1640,7 +1640,7 @@ function pintarCuentas(){
     return `<div class="persona-card ${p.id===personaActivaId?'on':''}" data-id="${p.id}">
       <div class="info">
         <h4>${p.nombre}${badge}</h4>
-        <div class="sub">${p.oficio||'—'}${p.obra?' · '+p.obra:''}</div>
+        <div class="sub">${p.oficio||'—'}${p.obra?' · '+p.obra:''}${p.precioUnitario?' · '+ars(p.precioUnitario)+unidadTxt[p.formaCobro]:''}</div>
       </div>
       <div class="saldo ${cls}">${est}</div>
     </div>`;
