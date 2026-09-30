@@ -1839,14 +1839,29 @@ function pintarDetalle(){
   });
 }
 
+const OPCIONES_TIPO_MOVIMIENTO = [
+  ['adelanto','Adelanto (le diste plata)'],
+  ['material','Materiales entregados'],
+  ['herramienta','Herramienta prestada'],
+  ['trabajo','Trabajo terminado'],
+  ['pago','Pago realizado'],
+  ['otro_a_favor','Otro (a tu favor)'],
+  ['otro_en_contra','Otro (a favor de él)']
+];
 function editarMovimiento(id){
   const m = cuentas.movimientos.find(x=>x.id===id);
   if(!m) return;
   const nuevoMonto = prompt('Nuevo monto:', m.monto);
   if(nuevoMonto===null) return;
+  const listado = OPCIONES_TIPO_MOVIMIENTO.map((o,i)=>`${i+1}. ${o[1]}`).join('\n');
+  const actual = OPCIONES_TIPO_MOVIMIENTO.findIndex(o=>o[0]===m.tipo);
+  const nuevoTipoStr = prompt(`Tipo de movimiento (escribí el número):\n${listado}`, String(actual+1));
+  if(nuevoTipoStr===null) return;
+  const opcionElegida = OPCIONES_TIPO_MOVIMIENTO[parseInt(nuevoTipoStr,10) - 1];
   const nuevaNota = prompt('Nueva nota:', m.nota||'');
   if(nuevaNota===null) return;
-  m.monto = Number(nuevoMonto)||0;
+  m.monto = Number(unformatMiles(nuevoMonto))||0;
+  m.tipo = opcionElegida ? opcionElegida[0] : m.tipo;
   m.nota = nuevaNota;
   guardarCuentas(); pintarDetalle(); pintarCuentas(); toast('Movimiento actualizado');
 }
