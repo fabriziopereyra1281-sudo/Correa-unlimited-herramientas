@@ -1788,7 +1788,7 @@ function abrirDetallePersona(id){
   document.getElementById('detallePersona').style.display = 'block';
   document.getElementById('detPersonaNombre').textContent = p.nombre;
   document.getElementById('detPersonaInfo').innerHTML =
-    `${p.tipo==='empleado'?'Empleado propio':'Contratista'} · ${p.oficio||'—'}${p.obra?' · '+p.obra:''}`;
+    `${p.tipo==='empleado'?'Empleado propio':'Contratista'} · ${p.oficio||'—'}${p.obra?' · '+p.obra:''}${p.precioUnitario?' · Tarifa: '+ars(p.precioUnitario)+unidadTxt[p.formaCobro]:''}`;
   pintarDetalle();
   pintarCuentas();
   document.getElementById('detallePersona').scrollIntoView({behavior:'smooth',block:'start'});
