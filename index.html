@@ -1591,8 +1591,7 @@ function cargarCuentas(){
 function guardarCuentas(){ localStorage.setItem(KEY_CUENTAS, JSON.stringify(cuentas)); }
 
 const signoDe = (tipo)=>{
-  if(tipo==='adelanto'||tipo==='material'||tipo==='herramienta'||tipo==='otro_a_favor') return 1;
-  return -1;
+  if(tipo==='adelanto'||tipo==='material'||tipo==='herramienta'||tipo==='otro_a_favor'||tipo==='pago') return 1;
 };
 const nombreTipo = (t)=>{
   return ({
