@@ -1815,10 +1815,10 @@ function pintarDetalle(){
       <div class="s">${movs.length} movimientos</div></div>
     <div class="kpi"><div class="k">A tu favor</div>
       <div class="v">${ars(movs.filter(m=>signoDe(m.tipo)>0).reduce((a,m)=>a+Number(m.monto||0),0))}</div>
-      <div class="s">Adelantos + materiales</div></div>
+      <div class="s">Adelantos + pagos que hiciste</div></div>
     <div class="kpi"><div class="k">A favor de él</div>
       <div class="v">${ars(movs.filter(m=>signoDe(m.tipo)<0).reduce((a,m)=>a+Number(m.monto||0),0))}</div>
-      <div class="s">Trabajos + pagos</div></div>
+      <div class="s">Trabajos que le debés</div></div>
     <div class="kpi"><div class="k">Último movimiento</div>
       <div class="v">${movs[0]?ars(movs[0].monto):'—'}</div>
       <div class="s">${movs[0]?movs[0].fecha:'—'}</div></div>`;
