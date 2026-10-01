@@ -1311,7 +1311,8 @@ function calcularCash(){
       <td class="${f.acum<0?'neg':'pos'}">${usd(f.acum)}</td>
     </tr>`).join('') +
     `<tr class="total"><td>Total</td><td>100%</td>
-      <td class="pos">${usd(totalIng)}</td><td>${usd(totalEgr)}</td><td></td>
+      <td class="pos">${usd(totalIng)}</td><td>${usd(totalEgr)}</td>
+      <td class="${fin<0?'neg':'pos'}">${usd(fin)}</td>
       <td class="${fin<0?'neg':'pos'}">${usd(fin)}</td></tr>`;
 
   pintarCAC(total);
