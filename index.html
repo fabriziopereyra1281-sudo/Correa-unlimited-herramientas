@@ -920,9 +920,10 @@ function pintarNiveles(){
     ['estandar','Estándar','Equilibrio costo-calidad'],
     ['premium','Premium','Materiales superiores']
   ];
+  const sufUnidad = p.unidad === 'cerrado' ? ' obra' : (unidadTxt[p.unidad] || '/unidad');
   box.innerHTML = defs.map(([k,n,d])=>`
     <button class="lvl ${k===nivel?'on':''}" data-k="${k}">
-      <span class="n">${n}</span><span class="p">${usd(p.precios[k])}/unidad</span>
+      <span class="n">${n}</span><span class="p">${usd(p.precios[k])}${sufUnidad}</span>
     </button>`).join('');
   box.querySelectorAll('.lvl').forEach(b=>{
     b.onclick = ()=>{ nivel=b.dataset.k; pintarNiveles(); calcular(); };
