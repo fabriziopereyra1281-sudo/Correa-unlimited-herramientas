@@ -354,6 +354,19 @@ function mostrarErrorEnPantalla(msg, color){
         <button class="btn ghost" id="btnDuplicar">Duplicar actual</button>
       </div>
     </div>
+    <div class="card">
+      <h3>Copia de seguridad</h3>
+      <div class="note" style="text-align:left;padding:0 0 10px">
+        Todos tus datos (plantillas, cuentas y movimientos) viven solo en este
+        celular/navegador. Descargá una copia para no perderlos, o restaurala
+        en otro dispositivo.
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn" id="btnExportarBackup">⬇️ Descargar backup</button>
+        <button class="btn" id="btnImportarBackup">⬆️ Restaurar backup</button>
+      </div>
+      <input type="file" id="inputImportarBackup" accept="application/json" style="display:none">
+    </div>
     <div class="plant-form" id="plantForm" style="display:none">
       <h4 id="formTitulo">Editar plantilla</h4>
       <div class="grid" style="margin-bottom:12px">
@@ -1219,6 +1232,53 @@ document.getElementById('fGuardar').onclick = ()=>{
   document.getElementById('plantForm').style.display = 'none';
   pintarPlantillas();
   toast('Plantilla guardada ✓');
+};
+
+/* ===== COPIA DE SEGURIDAD ===== */
+function exportarBackup(){
+  const data = {
+    app: 'correa-unlimited', version: 1, fecha: new Date().toISOString(),
+    correa_v7: localStorage.getItem(KEY),
+    correa_v7_adj: localStorage.getItem(KEY + '_adj'),
+    correa_v7_cuentas: localStorage.getItem(KEY_CUENTAS)
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `correa-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Backup descargado ✓');
+}
+
+function importarBackup(file){
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    let data;
+    try{ data = JSON.parse(reader.result); }
+    catch(e){ toast('El archivo no es un backup válido'); return; }
+    if(!data || !data.correa_v7){ toast('El archivo no es un backup válido'); return; }
+    if(!confirm('Esto reemplaza TODOS los datos actuales (plantillas, cuentas y movimientos) por los del backup. ¿Continuar?')) return;
+    localStorage.setItem(KEY, data.correa_v7);
+    if(data.correa_v7_adj) localStorage.setItem(KEY + '_adj', data.correa_v7_adj);
+    else localStorage.removeItem(KEY + '_adj');
+    if(data.correa_v7_cuentas) localStorage.setItem(KEY_CUENTAS, data.correa_v7_cuentas);
+    else localStorage.removeItem(KEY_CUENTAS);
+    toast('Backup restaurado ✓ Recargando…');
+    setTimeout(()=>location.reload(), 800);
+  };
+  reader.readAsText(file);
+}
+
+document.getElementById('btnExportarBackup').onclick = exportarBackup;
+document.getElementById('btnImportarBackup').onclick = ()=>{
+  document.getElementById('inputImportarBackup').click();
+};
+document.getElementById('inputImportarBackup').onchange = e=>{
+  const file = e.target.files[0];
+  if(file) importarBackup(file);
+  e.target.value = '';
 };
 
 /* ===== CASH FLOW ===== */
