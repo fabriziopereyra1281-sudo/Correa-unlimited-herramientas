@@ -166,18 +166,19 @@ function mostrarErrorEnPantalla(msg, color){
               padding:16px;margin-top:12px}
   .plant-form h4{margin:0 0 12px;font-size:13px;font-weight:700}
 
-  .tarea-row{display:grid;grid-template-columns:22px 1.3fr .9fr .5fr .5fr .9fr .9fr .8fr 28px;
+  .tarea-row{display:grid;grid-template-columns:22px 30px 1.3fr .9fr .5fr .5fr .9fr .9fr .8fr 28px;
              gap:5px;align-items:center;margin-bottom:7px;font-size:12px}
   .tarea-row input,.tarea-row select{padding:7px 6px;font-size:12px;border-radius:7px;text-align:center}
   .tarea-row input[type=text]{text-align:left}
   .tarea-row select{text-align:left}
   .tarea-row .num{color:var(--muted);font-weight:700;text-align:center;font-size:11px}
+  .tarea-row .pct-rubro{color:var(--accent);font-weight:700;text-align:center;font-size:11px}
   .tarea-row .del{background:transparent;border:0;color:var(--muted);cursor:pointer;font-size:16px;padding:4px}
   .tarea-row .del:hover{color:var(--bad)}
   .ft-rolcell{display:flex;flex-direction:column;gap:3px}
   .ft-rolcell select{padding:4px 3px;font-size:10px}
   .ft-rolcell input{padding:4px 3px;font-size:11px;text-align:center}
-  .thead{display:grid;grid-template-columns:22px 1.3fr .9fr .5fr .5fr .9fr .9fr .8fr 28px;
+  .thead{display:grid;grid-template-columns:22px 30px 1.3fr .9fr .5fr .5fr .9fr .9fr .8fr 28px;
          gap:5px;font-size:9px;text-transform:uppercase;letter-spacing:.06em;
          color:var(--muted);font-weight:700;margin-bottom:6px;padding:0 2px}
   .thead span{text-align:center} .thead span:first-child{text-align:left}
@@ -230,7 +231,7 @@ function mostrarErrorEnPantalla(msg, color){
     .kpis{grid-template-columns:1fr 1fr;gap:8px}
     .tab{font-size:10px;padding:9px 4px}
     header img{max-width:120px}
-    .tarea-row,.thead{grid-template-columns:18px 1.1fr .8fr .45fr .45fr .85fr .85fr .7fr 22px;font-size:10px;gap:3px}
+    .tarea-row,.thead{grid-template-columns:18px 24px 1.1fr .8fr .45fr .45fr .85fr .85fr .7fr 22px;font-size:10px;gap:3px}
     .tarea-row input,.tarea-row select{padding:6px 4px;font-size:11px}
     .ft-rolcell select{font-size:9px;padding:3px 2px}
     .ft-rolcell input{font-size:10px;padding:3px 2px}
@@ -409,7 +410,7 @@ function mostrarErrorEnPantalla(msg, color){
       <div class="sum" id="fSumRubros"></div>
       <label class="fld" style="margin-top:14px">Tareas del plan semanal</label>
       <div class="thead">
-        <span>#</span><span>Tarea</span><span>Rubro</span><span>Inicio</span><span>Sem.</span>
+        <span>#</span><span>%</span><span>Tarea</span><span>Rubro</span><span>Inicio</span><span>Sem.</span>
         <span>Rol 1</span><span>Rol 2</span><span>Materiales</span><span></span>
       </div>
       <div id="fTareas"></div>
@@ -1183,7 +1184,7 @@ function pintarFormRubros(rubros){
     inp.oninput = e=>{ formRubros[inp.dataset.i].nombre = e.target.value; };
   });
   box.querySelectorAll('.fr-pct').forEach(inp=>{
-    inp.oninput = e=>{ formRubros[inp.dataset.i].pct = Number(e.target.value)||0; sumarFormRubros(); };
+    inp.oninput = e=>{ formRubros[inp.dataset.i].pct = Number(e.target.value)||0; sumarFormRubros(); refrescarPctTareas(); };
   });
   box.querySelectorAll('[data-del]').forEach(btn=>{
     btn.onclick = ()=>{
@@ -1219,8 +1220,10 @@ function pintarFormTareas(tareas, rubros){
     const opts = rubros.map(r=>`<option value="${r.id}" ${r.id===t.rubro?'selected':''}>${r.nombre}</option>`).join('');
     const c1 = (t.cuadrilla||[])[0] || {rol:'', cantidad:0};
     const c2 = (t.cuadrilla||[])[1] || {rol:'', cantidad:0};
+    const rubroPct = (rubros.find(r=>r.id===t.rubro)||{}).pct||0;
     return `<div class="tarea-row" data-i="${i}">
       <span class="num">${i+1}</span>
+      <span class="pct-rubro">${rubroPct}%</span>
       <input type="text" class="ft-nombre" value="${t.nombre}">
       <select class="ft-rubro">${opts}</select>
       <input type="number" class="ft-inicio" value="${t.inicio}" min="1" step="1">
@@ -1245,14 +1248,17 @@ function pintarFormTareas(tareas, rubros){
       const rol2 = row.querySelector('.ft-rol2').value, cant2 = Math.max(0, Number(row.querySelector('.ft-cant2').value)||0);
       if(rol1 && cant1>0) cuadrilla.push({ rol:rol1, cantidad:cant1 });
       if(rol2 && cant2>0) cuadrilla.push({ rol:rol2, cantidad:cant2 });
+      const rubroId = row.querySelector('.ft-rubro').value;
       formTareas[i] = {
         nombre: row.querySelector('.ft-nombre').value,
-        rubro: row.querySelector('.ft-rubro').value,
+        rubro: rubroId,
         inicio: Math.max(1, Number(row.querySelector('.ft-inicio').value)||1),
         semanas: Math.max(1, Number(row.querySelector('.ft-semanas').value)||1),
         cuadrilla,
         materiales: Math.max(0, Number(row.querySelector('.ft-materiales').value)||0)
       };
+      const rubroPct = (formRubros.find(r=>r.id===rubroId)||{}).pct||0;
+      row.querySelector('.pct-rubro').textContent = rubroPct + '%';
     };
     row.querySelectorAll('input,select').forEach(inp=>{ inp.oninput = upd; inp.onchange = upd; });
     row.querySelector('.del').onclick = ()=>{ formTareas.splice(i,1); pintarFormTareas(formTareas, formRubros); };
@@ -1261,6 +1267,14 @@ function pintarFormTareas(tareas, rubros){
 
 function pintarFormTareasRoles(){
   if(formTareas.length) pintarFormTareas(formTareas, formRubros);
+}
+
+function refrescarPctTareas(){
+  document.querySelectorAll('#fTareas .tarea-row').forEach(row=>{
+    const rubroId = row.querySelector('.ft-rubro').value;
+    const pct = (formRubros.find(r=>r.id===rubroId)||{}).pct||0;
+    row.querySelector('.pct-rubro').textContent = pct + '%';
+  });
 }
 
 document.getElementById('btnNuevaPlant').onclick = ()=>abrirFormPlantilla(null);
