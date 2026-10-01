@@ -874,19 +874,7 @@ function cuadrillaTexto(tarea){
 }
 function formatMiles(v){
   if(v === '' || v === null || v === undefined) return '';
-  let s = String(v);
-  // El teclado numérico de algunos celulares/tablets manda "." en vez de ","
-  // como tecla de decimal (depende del idioma del dispositivo). Si hay un
-  // solo punto y le siguen 0, 1 o 2 dígitos, es ese caso y lo tratamos como
-  // la coma decimal. Si hay más de un punto, o el que hay tiene 3 dígitos
-  // después, son los puntos de miles que pone la propia app (esos nunca se
-  // escriben a mano, así que no hay ambigüedad real).
-  if(!s.includes(',') && (s.match(/\./g)||[]).length === 1){
-    const idx = s.indexOf('.');
-    const tail = s.slice(idx+1);
-    if(/^\d{0,2}$/.test(tail)) s = s.slice(0,idx) + ',' + tail;
-  }
-  const partes = s.split(',');
+  const partes = String(v).split(',');
   let entero = partes[0].replace(/\D/g,'');
   entero = entero.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   if(partes.length > 1){
@@ -906,18 +894,29 @@ function formatMilesNum(n){
 function unformatMiles(v){
   return String(v||'').replace(/\./g,'').replace(',', '.');
 }
+function reformatearInputMiles(el, ev){
+  // El teclado numérico de algunos celulares/tablets usa "." en vez de ","
+  // como tecla de decimal (depende del idioma del dispositivo). Si la tecla
+  // que se acaba de tocar fue literalmente un ".", lo convertimos a "," ahí
+  // mismo, en la posición donde se tipeó — así no hace falta adivinar por el
+  // texto final (que falla si el entero ya tiene su propio punto de miles).
+  if(ev && ev.data === '.' && ev.inputType === 'insertText'){
+    const pos = el.selectionStart;
+    el.value = el.value.slice(0, pos-1) + ',' + el.value.slice(pos);
+    el.setSelectionRange(pos, pos);
+  }
+  const desdeElFinal = el.value.length - (el.selectionStart||el.value.length);
+  el.value = formatMiles(el.value);
+  const nuevaPos = Math.max(0, el.value.length - desdeElFinal);
+  try{ el.setSelectionRange(nuevaPos, nuevaPos); }catch(e){}
+}
 function activarFormatoMiles(){
   const campos = ['pPrecio','movMonto','adjMonto','fEco','fEst','fPre','emMonto','pesosDisponibles'];
   campos.forEach(id=>{
     const el = document.getElementById(id);
     if(!el || el.dataset.fmtMiles) return;
     el.dataset.fmtMiles = '1';
-    el.addEventListener('input', ()=>{
-      const desdeElFinal = el.value.length - (el.selectionStart||el.value.length);
-      el.value = formatMiles(el.value);
-      const nuevaPos = Math.max(0, el.value.length - desdeElFinal);
-      try{ el.setSelectionRange(nuevaPos, nuevaPos); }catch(e){}
-    });
+    el.addEventListener('input', (ev)=>reformatearInputMiles(el, ev));
   });
 }
 function fmtHora(iso){
@@ -1236,7 +1235,7 @@ function pintarFormTareas(tareas, rubros){
         <select class="ft-rol2">${opcionesRoles(c2.rol)}</select>
         <input type="number" class="ft-cant2" value="${c2.cantidad||0}" min="0" step="1">
       </div>
-      <input type="number" class="ft-materiales" value="${t.materiales}" min="0" step="1000">
+      <input type="text" class="ft-materiales" inputmode="decimal" value="${formatMilesNum(t.materiales)}">
       <button class="del" data-del="${i}">×</button>
     </div>`;
   }).join('');
@@ -1255,11 +1254,12 @@ function pintarFormTareas(tareas, rubros){
         inicio: Math.max(1, Number(row.querySelector('.ft-inicio').value)||1),
         semanas: Math.max(1, Number(row.querySelector('.ft-semanas').value)||1),
         cuadrilla,
-        materiales: Math.max(0, Number(row.querySelector('.ft-materiales').value)||0)
+        materiales: Math.max(0, Number(unformatMiles(row.querySelector('.ft-materiales').value))||0)
       };
       const rubroPct = (formRubros.find(r=>r.id===rubroId)||{}).pct||0;
       row.querySelector('.pct-rubro').textContent = rubroPct + '%';
     };
+    row.querySelector('.ft-materiales').addEventListener('input', (ev)=>reformatearInputMiles(row.querySelector('.ft-materiales'), ev));
     row.querySelectorAll('input,select').forEach(inp=>{ inp.oninput = upd; inp.onchange = upd; });
     row.querySelector('.del').onclick = ()=>{ formTareas.splice(i,1); pintarFormTareas(formTareas, formRubros); };
   });
