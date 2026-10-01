@@ -873,7 +873,19 @@ function cuadrillaTexto(tarea){
 }
 function formatMiles(v){
   if(v === '' || v === null || v === undefined) return '';
-  const partes = String(v).split(',');
+  let s = String(v);
+  // El teclado numérico de algunos celulares/tablets manda "." en vez de ","
+  // como tecla de decimal (depende del idioma del dispositivo). Si hay un
+  // solo punto y le siguen 0, 1 o 2 dígitos, es ese caso y lo tratamos como
+  // la coma decimal. Si hay más de un punto, o el que hay tiene 3 dígitos
+  // después, son los puntos de miles que pone la propia app (esos nunca se
+  // escriben a mano, así que no hay ambigüedad real).
+  if(!s.includes(',') && (s.match(/\./g)||[]).length === 1){
+    const idx = s.indexOf('.');
+    const tail = s.slice(idx+1);
+    if(/^\d{0,2}$/.test(tail)) s = s.slice(0,idx) + ',' + tail;
+  }
+  const partes = s.split(',');
   let entero = partes[0].replace(/\D/g,'');
   entero = entero.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   if(partes.length > 1){
