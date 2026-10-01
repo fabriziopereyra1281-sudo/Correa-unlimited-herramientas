@@ -406,12 +406,17 @@ function mostrarErrorEnPantalla(msg, color){
           <input type="number" id="fAntMax" step="5" min="0" max="100"></div>
       </div>
       <label class="fld" style="margin-top:10px">Rubros del presupuesto</label>
+      <div class="ed-row" style="grid-template-columns:1fr 90px 32px;margin-bottom:2px">
+        <span style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700">Nombre del rubro</span>
+        <span style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700;text-align:center">% del total</span>
+        <span></span>
+      </div>
       <div id="fRubros"></div>
       <div class="sum" id="fSumRubros"></div>
       <label class="fld" style="margin-top:14px">Tareas del plan semanal</label>
       <div class="thead">
         <span>#</span><span>%</span><span>Tarea</span><span>Rubro</span><span>Inicio</span><span>Sem.</span>
-        <span>Rol 1</span><span>Rol 2</span><span>Materiales</span><span></span>
+        <span>Rol 1</span><span>Rol 2</span><span>Materiales ($)</span><span></span>
       </div>
       <div id="fTareas"></div>
       <div style="margin-top:8px">
