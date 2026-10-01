@@ -166,7 +166,7 @@ function mostrarErrorEnPantalla(msg, color){
               padding:16px;margin-top:12px}
   .plant-form h4{margin:0 0 12px;font-size:13px;font-weight:700}
 
-  .tarea-row{display:grid;grid-template-columns:22px 1.5fr 1fr .55fr .55fr .55fr .55fr .9fr 28px;
+  .tarea-row{display:grid;grid-template-columns:22px 1.3fr .9fr .5fr .5fr .9fr .9fr .8fr 28px;
              gap:5px;align-items:center;margin-bottom:7px;font-size:12px}
   .tarea-row input,.tarea-row select{padding:7px 6px;font-size:12px;border-radius:7px;text-align:center}
   .tarea-row input[type=text]{text-align:left}
@@ -174,7 +174,10 @@ function mostrarErrorEnPantalla(msg, color){
   .tarea-row .num{color:var(--muted);font-weight:700;text-align:center;font-size:11px}
   .tarea-row .del{background:transparent;border:0;color:var(--muted);cursor:pointer;font-size:16px;padding:4px}
   .tarea-row .del:hover{color:var(--bad)}
-  .thead{display:grid;grid-template-columns:22px 1.5fr 1fr .55fr .55fr .55fr .55fr .9fr 28px;
+  .ft-rolcell{display:flex;flex-direction:column;gap:3px}
+  .ft-rolcell select{padding:4px 3px;font-size:10px}
+  .ft-rolcell input{padding:4px 3px;font-size:11px;text-align:center}
+  .thead{display:grid;grid-template-columns:22px 1.3fr .9fr .5fr .5fr .9fr .9fr .8fr 28px;
          gap:5px;font-size:9px;text-transform:uppercase;letter-spacing:.06em;
          color:var(--muted);font-weight:700;margin-bottom:6px;padding:0 2px}
   .thead span{text-align:center} .thead span:first-child{text-align:left}
@@ -227,8 +230,10 @@ function mostrarErrorEnPantalla(msg, color){
     .kpis{grid-template-columns:1fr 1fr;gap:8px}
     .tab{font-size:10px;padding:9px 4px}
     header img{max-width:120px}
-    .tarea-row,.thead{grid-template-columns:18px 1.3fr .9fr .5fr .5fr .5fr .5fr .8fr 24px;font-size:10px;gap:3px}
+    .tarea-row,.thead{grid-template-columns:18px 1.1fr .8fr .45fr .45fr .85fr .85fr .7fr 22px;font-size:10px;gap:3px}
     .tarea-row input,.tarea-row select{padding:6px 4px;font-size:11px}
+    .ft-rolcell select{font-size:9px;padding:3px 2px}
+    .ft-rolcell input{font-size:10px;padding:3px 2px}
     .gantt{min-width:560px}
     .gantt-head,.gantt-row{grid-template-columns:120px 1fr;gap:6px}
     .gantt-label{font-size:11px}
@@ -405,7 +410,7 @@ function mostrarErrorEnPantalla(msg, color){
       <label class="fld" style="margin-top:14px">Tareas del plan semanal</label>
       <div class="thead">
         <span>#</span><span>Tarea</span><span>Rubro</span><span>Inicio</span><span>Sem.</span>
-        <span>Of.</span><span>Ay.</span><span>Materiales</span><span></span>
+        <span>Rol 1</span><span>Rol 2</span><span>Materiales</span><span></span>
       </div>
       <div id="fTareas"></div>
       <div style="margin-top:8px">
@@ -456,15 +461,17 @@ function mostrarErrorEnPantalla(msg, color){
   <!-- PLAN SEMANAL -->
   <div class="panel" id="p-plan">
     <div class="card tight">
-      <h3>Jornales y días (editables)</h3>
-      <div class="grid3">
-        <div><label class="fld" for="jorOficial">Oficial $/día</label>
-          <input type="number" id="jorOficial" step="1000" min="0" inputmode="numeric"></div>
-        <div><label class="fld" for="jorAyudante">Ayudante $/día</label>
-          <input type="number" id="jorAyudante" step="1000" min="0" inputmode="numeric"></div>
-        <div><label class="fld" for="diasSem">Días/semana</label>
-          <input type="number" id="diasSem" step="1" min="1" max="7" inputmode="numeric"></div>
+      <h3>Roles y tarifas (editables)</h3>
+      <div class="note" style="text-align:left;padding:0 0 10px">
+        Cargá acá cada oficio que uses (electricista, albañil, ayudante, etc.)
+        con su jornal. Después asignás esos roles a cada tarea en Plantillas.
       </div>
+      <div id="rolesLista"></div>
+      <div style="margin:10px 0">
+        <button class="btn sm" id="btnAddRol">+ Rol</button>
+      </div>
+      <label class="fld" for="diasSem" style="margin-top:4px">Días/semana</label>
+      <input type="number" id="diasSem" step="1" min="1" max="7" inputmode="numeric" style="max-width:140px">
     </div>
     <div class="kpis" id="planKpis"></div>
     <div class="card">
@@ -725,15 +732,15 @@ const PLANTILLAS_BASE = [
       { id:'gestion',      nombre:'Gestión y honorarios',       pct:8  }
     ],
     tareas: [
-      { nombre:'Demolición',               rubro:'estructura',    inicio:1,  semanas:1, oficial:1, ayudante:1, materiales:80000  },
-      { nombre:'Excavación y fundaciones', rubro:'estructura',    inicio:2,  semanas:2, oficial:1, ayudante:1, materiales:250000 },
-      { nombre:'Estructura',               rubro:'estructura',    inicio:4,  semanas:2, oficial:1, ayudante:1, materiales:400000 },
-      { nombre:'Mampostería',              rubro:'mamposteria',   inicio:6,  semanas:3, oficial:1, ayudante:1, materiales:200000 },
-      { nombre:'Instalación eléctrica',    rubro:'instalaciones', inicio:9,  semanas:2, oficial:1, ayudante:1, materiales:150000 },
-      { nombre:'Plomería',                 rubro:'instalaciones', inicio:11, semanas:2, oficial:1, ayudante:1, materiales:120000 },
-      { nombre:'Revoques',                 rubro:'acabados',      inicio:13, semanas:2, oficial:1, ayudante:1, materiales:100000 },
-      { nombre:'Pisos',                    rubro:'acabados',      inicio:15, semanas:1, oficial:1, ayudante:1, materiales:180000 },
-      { nombre:'Pintura',                  rubro:'acabados',      inicio:16, semanas:1, oficial:1, ayudante:1, materiales:90000  }
+      { nombre:'Demolición',               rubro:'estructura',    inicio:1,  semanas:1, cuadrilla:[{rol:'oficial',cantidad:1},{rol:'ayudante',cantidad:1}], materiales:80000  },
+      { nombre:'Excavación y fundaciones', rubro:'estructura',    inicio:2,  semanas:2, cuadrilla:[{rol:'oficial',cantidad:1},{rol:'ayudante',cantidad:1}], materiales:250000 },
+      { nombre:'Estructura',               rubro:'estructura',    inicio:4,  semanas:2, cuadrilla:[{rol:'oficial',cantidad:1},{rol:'ayudante',cantidad:1}], materiales:400000 },
+      { nombre:'Mampostería',              rubro:'mamposteria',   inicio:6,  semanas:3, cuadrilla:[{rol:'oficial',cantidad:1},{rol:'ayudante',cantidad:1}], materiales:200000 },
+      { nombre:'Instalación eléctrica',    rubro:'instalaciones', inicio:9,  semanas:2, cuadrilla:[{rol:'oficial',cantidad:1},{rol:'ayudante',cantidad:1}], materiales:150000 },
+      { nombre:'Plomería',                 rubro:'instalaciones', inicio:11, semanas:2, cuadrilla:[{rol:'oficial',cantidad:1},{rol:'ayudante',cantidad:1}], materiales:120000 },
+      { nombre:'Revoques',                 rubro:'acabados',      inicio:13, semanas:2, cuadrilla:[{rol:'oficial',cantidad:1},{rol:'ayudante',cantidad:1}], materiales:100000 },
+      { nombre:'Pisos',                    rubro:'acabados',      inicio:15, semanas:1, cuadrilla:[{rol:'oficial',cantidad:1},{rol:'ayudante',cantidad:1}], materiales:180000 },
+      { nombre:'Pintura',                  rubro:'acabados',      inicio:16, semanas:1, cuadrilla:[{rol:'oficial',cantidad:1},{rol:'ayudante',cantidad:1}], materiales:90000  }
     ]
   },
   {
@@ -752,21 +759,20 @@ const PLANTILLAS_BASE = [
       { id:'gestion',    nombre:'Gestión y honorarios',    pct:5  }
     ],
     tareas: [
-      { nombre:'Nivelación del terreno', rubro:'suelos',     inicio:1, semanas:2, oficial:2, ayudante:2, materiales:1500000 },
-      { nombre:'Fundaciones',            rubro:'estructura', inicio:3, semanas:2, oficial:2, ayudante:3, materiales:2500000 },
-      { nombre:'Estructura metálica',    rubro:'estructura', inicio:5, semanas:3, oficial:3, ayudante:3, materiales:8000000 },
-      { nombre:'Cerramientos',           rubro:'cierres',    inicio:8, semanas:2, oficial:2, ayudante:2, materiales:3500000 },
-      { nombre:'Césped sintético',       rubro:'canchas',    inicio:10,semanas:2, oficial:2, ayudante:2, materiales:4000000 },
-      { nombre:'Cristales',              rubro:'cierres',    inicio:12,semanas:2, oficial:2, ayudante:2, materiales:3000000 },
-      { nombre:'Iluminación',            rubro:'instal',     inicio:14,semanas:2, oficial:2, ayudante:1, materiales:2000000 },
-      { nombre:'Vestuarios',             rubro:'instal',     inicio:16,semanas:2, oficial:2, ayudante:2, materiales:1800000 },
-      { nombre:'Terminaciones',          rubro:'gestion',    inicio:18,semanas:1, oficial:2, ayudante:2, materiales:800000 }
+      { nombre:'Nivelación del terreno', rubro:'suelos',     inicio:1, semanas:2, cuadrilla:[{rol:'oficial',cantidad:2},{rol:'ayudante',cantidad:2}], materiales:1500000 },
+      { nombre:'Fundaciones',            rubro:'estructura', inicio:3, semanas:2, cuadrilla:[{rol:'oficial',cantidad:2},{rol:'ayudante',cantidad:3}], materiales:2500000 },
+      { nombre:'Estructura metálica',    rubro:'estructura', inicio:5, semanas:3, cuadrilla:[{rol:'oficial',cantidad:3},{rol:'ayudante',cantidad:3}], materiales:8000000 },
+      { nombre:'Cerramientos',           rubro:'cierres',    inicio:8, semanas:2, cuadrilla:[{rol:'oficial',cantidad:2},{rol:'ayudante',cantidad:2}], materiales:3500000 },
+      { nombre:'Césped sintético',       rubro:'canchas',    inicio:10,semanas:2, cuadrilla:[{rol:'oficial',cantidad:2},{rol:'ayudante',cantidad:2}], materiales:4000000 },
+      { nombre:'Cristales',              rubro:'cierres',    inicio:12,semanas:2, cuadrilla:[{rol:'oficial',cantidad:2},{rol:'ayudante',cantidad:2}], materiales:3000000 },
+      { nombre:'Iluminación',            rubro:'instal',     inicio:14,semanas:2, cuadrilla:[{rol:'oficial',cantidad:2},{rol:'ayudante',cantidad:1}], materiales:2000000 },
+      { nombre:'Vestuarios',             rubro:'instal',     inicio:16,semanas:2, cuadrilla:[{rol:'oficial',cantidad:2},{rol:'ayudante',cantidad:2}], materiales:1800000 },
+      { nombre:'Terminaciones',          rubro:'gestion',    inicio:18,semanas:1, cuadrilla:[{rol:'oficial',cantidad:2},{rol:'ayudante',cantidad:2}], materiales:800000 }
     ]
   }
 ];
 
 const GLOBAL = {
-  jornales: { oficial: 35000, ayudante: 25000, dias: 5 },
   fechaInicio: new Date().toISOString().slice(0,10),
   desvio: 10,
   dolarBlue: 1250,
@@ -774,11 +780,45 @@ const GLOBAL = {
 };
 
 let plantillas = cargarPlantillas();
+migrarDatos();
 let plantillaActiva = plantillas[0].id;
 let nivel = 'estandar';
 let adicionales = cargarAdicionales();
 let editandoId = null;
 let formRubros = [], formTareas = [];
+
+function migrarDatos(){
+  // Versiones viejas tenían un único $/día de "Oficial" y otro de
+  // "Ayudante" compartido por toda la app. Ahora son roles editables
+  // con su propia tarifa (electricista, albañil, etc.) — esto migra
+  // los datos ya guardados sin perder los valores que el usuario cargó.
+  if(!GLOBAL.roles){
+    if(GLOBAL.jornales){
+      GLOBAL.roles = [
+        { id:'oficial',  nombre:'Oficial',  precioDia: GLOBAL.jornales.oficial ?? 35000 },
+        { id:'ayudante', nombre:'Ayudante', precioDia: GLOBAL.jornales.ayudante ?? 25000 }
+      ];
+      GLOBAL.diasSem = GLOBAL.jornales.dias ?? 5;
+    } else {
+      GLOBAL.roles = [
+        { id:'oficial',  nombre:'Oficial',  precioDia: 35000 },
+        { id:'ayudante', nombre:'Ayudante', precioDia: 25000 }
+      ];
+      GLOBAL.diasSem = 5;
+    }
+  }
+  delete GLOBAL.jornales;
+  plantillas.forEach(p=>{
+    p.tareas.forEach(t=>{
+      if(!t.cuadrilla){
+        t.cuadrilla = [];
+        if(t.oficial)  t.cuadrilla.push({ rol:'oficial',  cantidad:t.oficial });
+        if(t.ayudante) t.cuadrilla.push({ rol:'ayudante', cantidad:t.ayudante });
+      }
+      delete t.oficial; delete t.ayudante;
+    });
+  });
+}
 
 function cargarPlantillas(){
   try{
@@ -817,6 +857,20 @@ const ars = n => '$ ' + Math.round(n).toLocaleString('es-AR');
 const pct = n => (Math.round(n*10)/10).toLocaleString('es-AR') + '%';
 const num = n => (Math.round(n*10)/10).toLocaleString('es-AR');
 const unidadTxt = {unidad:'/unidad', m2:'/m²', dia:'/día', hora:'/hora', cerrado:'obra'};
+function precioDeRol(rolId){
+  const r = GLOBAL.roles.find(r=>r.id===rolId);
+  return r ? r.precioDia : 0;
+}
+function costoManoObraDia(tarea){
+  return (tarea.cuadrilla||[]).reduce((a,c)=> a + (c.cantidad||0)*precioDeRol(c.rol), 0);
+}
+function cuadrillaTexto(tarea){
+  const partes = (tarea.cuadrilla||[]).filter(c=>c.cantidad>0).map(c=>{
+    const r = GLOBAL.roles.find(r=>r.id===c.rol);
+    return `${c.cantidad} ${r?r.nombre:'?'}`;
+  });
+  return partes.join(' + ') || '—';
+}
 function formatMiles(v){
   if(v === '' || v === null || v === undefined) return '';
   const partes = String(v).split(',');
@@ -1141,19 +1195,32 @@ function sumarFormRubros(){
   el.className = 'sum ' + (Math.abs(s-100)<0.1?'ok':'bad');
 }
 
+function opcionesRoles(seleccionado){
+  return '<option value="">—</option>' + GLOBAL.roles.map(r=>
+    `<option value="${r.id}" ${r.id===seleccionado?'selected':''}>${r.nombre}</option>`).join('');
+}
+
 function pintarFormTareas(tareas, rubros){
   formTareas = structuredClone(tareas);
   const box = document.getElementById('fTareas');
   box.innerHTML = formTareas.map((t,i)=>{
     const opts = rubros.map(r=>`<option value="${r.id}" ${r.id===t.rubro?'selected':''}>${r.nombre}</option>`).join('');
+    const c1 = (t.cuadrilla||[])[0] || {rol:'', cantidad:0};
+    const c2 = (t.cuadrilla||[])[1] || {rol:'', cantidad:0};
     return `<div class="tarea-row" data-i="${i}">
       <span class="num">${i+1}</span>
       <input type="text" class="ft-nombre" value="${t.nombre}">
       <select class="ft-rubro">${opts}</select>
       <input type="number" class="ft-inicio" value="${t.inicio}" min="1" step="1">
       <input type="number" class="ft-semanas" value="${t.semanas}" min="1" step="1">
-      <input type="number" class="ft-oficial" value="${t.oficial}" min="0" step="1">
-      <input type="number" class="ft-ayudante" value="${t.ayudante}" min="0" step="1">
+      <div class="ft-rolcell">
+        <select class="ft-rol1">${opcionesRoles(c1.rol)}</select>
+        <input type="number" class="ft-cant1" value="${c1.cantidad||0}" min="0" step="1">
+      </div>
+      <div class="ft-rolcell">
+        <select class="ft-rol2">${opcionesRoles(c2.rol)}</select>
+        <input type="number" class="ft-cant2" value="${c2.cantidad||0}" min="0" step="1">
+      </div>
       <input type="number" class="ft-materiales" value="${t.materiales}" min="0" step="1000">
       <button class="del" data-del="${i}">×</button>
     </div>`;
@@ -1161,19 +1228,27 @@ function pintarFormTareas(tareas, rubros){
   box.querySelectorAll('.tarea-row').forEach(row=>{
     const i = Number(row.dataset.i);
     const upd = ()=>{
+      const cuadrilla = [];
+      const rol1 = row.querySelector('.ft-rol1').value, cant1 = Math.max(0, Number(row.querySelector('.ft-cant1').value)||0);
+      const rol2 = row.querySelector('.ft-rol2').value, cant2 = Math.max(0, Number(row.querySelector('.ft-cant2').value)||0);
+      if(rol1 && cant1>0) cuadrilla.push({ rol:rol1, cantidad:cant1 });
+      if(rol2 && cant2>0) cuadrilla.push({ rol:rol2, cantidad:cant2 });
       formTareas[i] = {
         nombre: row.querySelector('.ft-nombre').value,
         rubro: row.querySelector('.ft-rubro').value,
         inicio: Math.max(1, Number(row.querySelector('.ft-inicio').value)||1),
         semanas: Math.max(1, Number(row.querySelector('.ft-semanas').value)||1),
-        oficial: Math.max(0, Number(row.querySelector('.ft-oficial').value)||0),
-        ayudante: Math.max(0, Number(row.querySelector('.ft-ayudante').value)||0),
+        cuadrilla,
         materiales: Math.max(0, Number(row.querySelector('.ft-materiales').value)||0)
       };
     };
     row.querySelectorAll('input,select').forEach(inp=>{ inp.oninput = upd; inp.onchange = upd; });
     row.querySelector('.del').onclick = ()=>{ formTareas.splice(i,1); pintarFormTareas(formTareas, formRubros); };
   });
+}
+
+function pintarFormTareasRoles(){
+  if(formTareas.length) pintarFormTareas(formTareas, formRubros);
 }
 
 document.getElementById('btnNuevaPlant').onclick = ()=>abrirFormPlantilla(null);
@@ -1194,7 +1269,9 @@ document.getElementById('fAddTarea').onclick = ()=>{
     nombre:'Nueva tarea',
     rubro: formRubros[0].id,
     inicio: last ? last.inicio + last.semanas : 1,
-    semanas: 1, oficial:1, ayudante:1, materiales:0
+    semanas: 1,
+    cuadrilla: GLOBAL.roles.slice(0,2).map(r=>({ rol:r.id, cantidad:1 })),
+    materiales: 0
   });
   pintarFormTareas(formTareas, formRubros);
 };
@@ -1283,10 +1360,10 @@ document.getElementById('inputImportarBackup').onchange = e=>{
 
 /* ===== CASH FLOW ===== */
 function pesoMesesDeTareas(p){
-  const jor = GLOBAL.jornales || { oficial:0, ayudante:0, dias:5 };
+  const dS = GLOBAL.diasSem || 5;
   const pesoMes = {};
   p.tareas.forEach(t=>{
-    const moSem = (t.oficial*jor.oficial + t.ayudante*jor.ayudante) * jor.dias;
+    const moSem = costoManoObraDia(t) * dS;
     const matSem = t.materiales / t.semanas;
     const costoSem = moSem + matSem;
     for(let s=t.inicio; s<t.inicio+t.semanas; s++){
@@ -1428,11 +1505,42 @@ function pintarCAC(total){
 }
 
 /* ===== PLAN SEMANAL ===== */
+function pintarRoles(){
+  const box = document.getElementById('rolesLista');
+  box.innerHTML = GLOBAL.roles.map((r,i)=>`
+    <div class="ed-row" style="grid-template-columns:1fr 120px 32px">
+      <input type="text" class="rol-nombre" data-i="${i}" value="${r.nombre}">
+      <input type="number" class="rol-precio" data-i="${i}" value="${r.precioDia}" step="1000" min="0">
+      <button class="rowbtn del" data-del="${i}">×</button>
+    </div>`).join('');
+  box.querySelectorAll('.rol-nombre').forEach(inp=>{
+    inp.oninput = e=>{
+      GLOBAL.roles[inp.dataset.i].nombre = e.target.value;
+      guardarPlantillas(); pintarFormTareasRoles();
+    };
+  });
+  box.querySelectorAll('.rol-precio').forEach(inp=>{
+    inp.oninput = e=>{
+      GLOBAL.roles[inp.dataset.i].precioDia = Number(e.target.value)||0;
+      guardarPlantillas(); calcularPlan();
+    };
+  });
+  box.querySelectorAll('[data-del]').forEach(btn=>{
+    btn.onclick = ()=>{
+      if(GLOBAL.roles.length<=1){ toast('Debe quedar al menos 1 rol'); return; }
+      GLOBAL.roles.splice(Number(btn.dataset.del),1);
+      guardarPlantillas(); pintarRoles(); calcularPlan(); pintarFormTareasRoles();
+    };
+  });
+}
+document.getElementById('btnAddRol').onclick = ()=>{
+  GLOBAL.roles.push({ id: nuevoId(), nombre:'Nuevo rol', precioDia: 0 });
+  guardarPlantillas(); pintarRoles(); pintarFormTareasRoles();
+};
+
 function calcularPlan(){
-  const jO = Number(document.getElementById('jorOficial').value)||0;
-  const jA = Number(document.getElementById('jorAyudante').value)||0;
   const dS = Number(document.getElementById('diasSem').value)||5;
-  GLOBAL.jornales = { oficial: jO, ayudante: jA, dias: dS };
+  GLOBAL.diasSem = dS;
   guardarPlantillas();
 
   const p = getPlantilla();
@@ -1441,7 +1549,7 @@ function calcularPlan(){
   for(let s=1; s<=maxSem; s++) semanas.push({sem:s, mo:0, mat:0, tareas:[]});
 
   p.tareas.forEach(t=>{
-    const moSem = (t.oficial*jO + t.ayudante*jA) * dS;
+    const moSem = costoManoObraDia(t) * dS;
     const matSem = t.materiales / t.semanas;
     for(let s=t.inicio; s<t.inicio+t.semanas; s++){
       const w = semanas[s-1]; if(!w) continue;
@@ -1591,7 +1699,8 @@ function calcularGantt(){
     </div>`;
   }).join('');
 
-  const totalDias = p.tareas.reduce((a,t)=> a + ((t.oficial + t.ayudante) * GLOBAL.jornales.dias * t.semanas), 0);
+  const totalDias = p.tareas.reduce((a,t)=>
+    a + ((t.cuadrilla||[]).reduce((s,c)=>s+(c.cantidad||0),0) * GLOBAL.diasSem * t.semanas), 0);
   document.getElementById('ganttResumen').innerHTML = `
     <div class="row"><span>Duración total</span>
       <span class="v">${maxSem} semanas (≈ ${num(meses)} meses)</span></div>
@@ -1717,8 +1826,6 @@ document.getElementById('fechaInicio').oninput = e=>{
 };
 document.getElementById('antPct').oninput = calcularCash;
 document.getElementById('retencion').oninput = calcularCash;
-document.getElementById('jorOficial').oninput = ()=>{ calcularPlan(); calcularGantt(); };
-document.getElementById('jorAyudante').oninput = ()=>{ calcularPlan(); calcularGantt(); };
 document.getElementById('diasSem').oninput = ()=>{ calcularPlan(); calcularGantt(); };
 
 function toast(msg){
@@ -2159,9 +2266,8 @@ pintarNiveles();
 calcular();
 document.getElementById('antPct').value = 45;
 document.getElementById('retencion').value = 0;
-document.getElementById('jorOficial').value = GLOBAL.jornales.oficial;
-document.getElementById('jorAyudante').value = GLOBAL.jornales.ayudante;
-document.getElementById('diasSem').value = GLOBAL.jornales.dias;
+document.getElementById('diasSem').value = GLOBAL.diasSem;
+pintarRoles();
 document.getElementById('fechaInicio').value = GLOBAL.fechaInicio;
 document.getElementById('dolarBlue').value = GLOBAL.dolarBlue;
 if(GLOBAL.dolarBlueFecha){
