@@ -975,9 +975,10 @@ function calcularPesosDisponibles(){
   const niveles = [['economica','Económica'],['estandar','Estándar'],['premium','Premium']];
   const partes = niveles.map(([k,n])=>{
     const precio = p.precios[k]||0;
-    return precio>0 ? `${n}: ${num(totalUsd/precio)} ${unidadCorta}` : null;
+    return precio>0 ? `${n}: <b style="color:var(--ink)">${num(totalUsd/precio)} ${unidadCorta}</b>` : null;
   }).filter(Boolean);
-  info.innerHTML = `= ${usd(totalUsd)}` + (partes.length ? '<br>Te alcanza para: ' + partes.join(' · ') : '');
+  info.innerHTML = `<div style="font-size:20px;font-weight:800;color:var(--ink);letter-spacing:-.02em">${usd(totalUsd)}</div>` +
+    (partes.length ? `<div style="margin-top:2px">Te alcanza para: ${partes.join(' · ')}</div>` : '');
 }
 function calcular(){
   const { p, cant, total, d, nombre } = datosBase();
